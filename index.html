@@ -5,125 +5,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeiterfassung - Neue Buchung</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: block;
+            padding: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background-color: var(--bg-color);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+            text-align: right;
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 8px 14px;
+            background: #edf2f7;
+            color: #2b6cb0;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .nav-link:hover { background: #cbd5e0; }
+
+        /* Fixierter Formular-Bereich */
+        .sticky-form-wrapper {
+            position: sticky;
+            top: 45px;
+            z-index: 100;
+            background-color: var(--bg-color);
+            padding: 16px 20px 0 20px;
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.08);
+        }
+
+        .sticky-form-wrapper .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Scrollbarer Listenbereich */
+        .scroll-area {
+            padding: 20px;
+        }
+
+        .scroll-area .list-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="form-container">
-        <div style="margin-bottom: 15px; text-align: right;">
-            <a href="auftraege.html" class="btn btn-small" style="text-decoration: none; display: inline-block;">📂 Aufträge verwalten</a>
-        </div>
-        <h2>⏱️ Neue Zeit erfassen</h2>
-        <form id="zeiterfassung-form">
+    <!-- Navigation -->
+    <div class="nav-bar">
+        <a href="auftraege.html" class="nav-link">📂 Aufträge verwalten</a>
+    </div>
 
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="datum_ze">Datum (DatumZE):</label>
-                    <input type="date" id="datum_ze" name="datum_ze" required>
+    <!-- Fixierter Formular-Bereich -->
+    <div class="sticky-form-wrapper">
+        <div class="form-container">
+            <h2>⏱️ Neue Zeit erfassen</h2>
+            <form id="zeiterfassung-form">
+
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="datum_ze">Datum (DatumZE):</label>
+                        <input type="date" id="datum_ze" name="datum_ze" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="buchungsart">Buchungsart:</label>
+                        <select id="buchungsart" name="buchungsart" required>
+                            <option value="Arbeitszeit" selected>Arbeitszeit</option>
+                            <option value="Pause">Pause</option>
+                            <option value="Dienstreise">Dienstreise</option>
+                        </select>
+                    </div>
                 </div>
+
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="zeit_von">Von:</label>
+                        <input type="time" id="zeit_von" name="zeit_von" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zeit_bis">Bis:</label>
+                        <input type="time" id="zeit_bis" name="zeit_bis" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
+                    </div>
+                </div>
+
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="auftrag_id">Auftrag (Code):</label>
+                        <select id="auftrag_id" name="auftrag_id" required>
+                            <option value="">-- Bitte wählen --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="meldungsnummer">Meldungsnummer:</label>
+                        <input type="text" id="meldungsnummer" name="meldungsnummer" placeholder="z.B. Ticket-ID">
+                    </div>
+                </div>
+
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="weiterleitung_an">Weiterleitung an:</label>
+                        <input type="text" id="weiterleitung_an" name="weiterleitung_an">
+                    </div>
+                    <div class="form-group">
+                        <label for="taetigkeit">Tätigkeit:</label>
+                        <input type="text" id="taetigkeit" name="taetigkeit" placeholder="Kurzbeschreibung">
+                    </div>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="problembeschreibung_unz" name="problembeschreibung_unz">
+                    <label for="problembeschreibung_unz">Problembeschreibung unzureichend</label>
+                </div>
+
                 <div class="form-group">
-                    <label for="buchungsart">Buchungsart:</label>
-                    <select id="buchungsart" name="buchungsart" required>
-                        <option value="Arbeitszeit" selected>Arbeitszeit</option>
+                    <label for="anmerkungen">Anmerkungen:</label>
+                    <textarea id="anmerkungen" name="anmerkungen" rows="4" placeholder="Detaillierte Infos zur Buchung..."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" id="btn-abbrechen">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Zeit buchen</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Scrollbarer Listenbereich -->
+    <div class="scroll-area">
+        <div class="list-container">
+            <div class="list-header">
+                <h2>📊 Gebuchte Zeiten</h2>
+                <div class="filter-bar">
+                    <button id="btn-prev-week" class="btn btn-small">◀ Letzte Woche</button>
+                    <span id="current-period-display" class="period-badge">KW 21 (Aktuelle Woche)</span>
+                    <button id="btn-next-week" class="btn btn-small">Nächste Woche ▶</button>
+
+                    <select id="filter-buchungsart">
+                        <option value="alle">Alle Buchungsarten</option>
+                        <option value="Arbeitszeit">Arbeitszeit</option>
                         <option value="Pause">Pause</option>
                         <option value="Dienstreise">Dienstreise</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="zeit_von">Von:</label>
-                    <input type="time" id="zeit_von" name="zeit_von" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
-                </div>
-                <div class="form-group">
-                    <label for="zeit_bis">Bis:</label>
-                    <input type="time" id="zeit_bis" name="zeit_bis" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
-                </div>
+            <div class="table-responsive">
+                <table class="zeiterfassung-table">
+                    <thead>
+                        <tr>
+                            <th>Datum</th>
+                            <th>Buchungsart</th>
+                            <th>Von - Bis</th>
+                            <th>Dauer</th>
+                            <th>Auftrag (Code)</th>
+                            <th>Tätigkeit / Anmerkung</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="zeit-eintraege-body">
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
+                            <td id="total-hours">00:00 Std.</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
-
-            <div class="form-grid double">
-                <div class="form-group">
-                    <!-- FIX: for="auftrag_id" statt for="auftrag_code" -->
-                    <label for="auftrag_id">Auftrag (Code):</label>
-                    <select id="auftrag_id" name="auftrag_id" required>
-                        <option value="">-- Bitte wählen --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="meldungsnummer">Meldungsnummer:</label>
-                    <input type="text" id="meldungsnummer" name="meldungsnummer" placeholder="z.B. Ticket-ID">
-                </div>
-            </div>
-
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="weiterleitung_an">Weiterleitung an:</label>
-                    <input type="text" id="weiterleitung_an" name="weiterleitung_an">
-                </div>
-                <div class="form-group">
-                    <label for="taetigkeit">Tätigkeit:</label>
-                    <input type="text" id="taetigkeit" name="taetigkeit" placeholder="Kurzbeschreibung">
-                </div>
-            </div>
-
-            <div class="form-group checkbox-group">
-                <input type="checkbox" id="problembeschreibung_unz" name="problembeschreibung_unz">
-                <label for="problembeschreibung_unz">Problembeschreibung unzureichend</label>
-            </div>
-
-            <div class="form-group">
-                <label for="anmerkungen">Anmerkungen:</label>
-                <textarea id="anmerkungen" name="anmerkungen" rows="4" placeholder="Detaillierte Infos zur Buchung..."></textarea>
-            </div>
-
-            <div class="button-group">
-                <button type="button" class="btn btn-secondary" id="btn-abbrechen">Abbrechen</button>
-                <button type="submit" class="btn btn-primary">Zeit buchen</button>
-            </div>
-
-        </form>
-    </div>
-
-    <div class="list-container">
-        <div class="list-header">
-            <h2>📊 Gebuchte Zeiten</h2>
-            <div class="filter-bar">
-                <button id="btn-prev-week" class="btn btn-small">◀ Letzte Woche</button>
-                <span id="current-period-display" class="period-badge">KW 21 (Aktuelle Woche)</span>
-                <button id="btn-next-week" class="btn btn-small">Nächste Woche ▶</button>
-
-                <select id="filter-buchungsart">
-                    <option value="alle">Alle Buchungsarten</option>
-                    <option value="Arbeitszeit">Arbeitszeit</option>
-                    <option value="Pause">Pause</option>
-                    <option value="Dienstreise">Dienstreise</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="zeiterfassung-table">
-                <thead>
-                    <tr>
-                        <th>Datum</th>
-                        <th>Buchungsart</th>
-                        <th>Von - Bis</th>
-                        <th>Dauer</th>
-                        <th>Auftrag (Code)</th>
-                        <th>Tätigkeit / Anmerkung</th>
-                        <th>Aktionen</th>
-                    </tr>
-                </thead>
-                <tbody id="zeit-eintraege-body">
-                </tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
-                        <td id="total-hours">00:00 Std.</td>
-                        <td colspan="3"></td>
-                    </tr>
-                </tfoot>
-            </table>
         </div>
     </div>
 
