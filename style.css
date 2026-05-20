@@ -1,250 +1,61 @@
-:root {
-    --bg-color: #f4f6f9;
-    --card-bg: #ffffff;
-    --text-color: #333333;
-    --primary-color: #2b6cb0;
-    --primary-hover: #1a446c;
-    --border-color: #cbd5e0;
-    --focus-ring: #90cdf4;
-    --radius: 8px;
+
+/* ========================================================
+   DARK MODE
+   ======================================================== */
+body.dark-mode {
+    --bg-color: #1a202c;
+    --card-bg: #2d3748;
+    --text-color: #e2e8f0;
+    --border-color: #4a5568;
+    --focus-ring: #2b6cb0;
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+body.dark-mode h2 { color: #e2e8f0; }
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="date"],
+body.dark-mode input[type="time"],
+body.dark-mode select,
+body.dark-mode textarea {
+    background-color: #1a202c;
+    color: #e2e8f0;
+    border-color: #4a5568;
 }
 
-.form-container {
-    background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: var(--radius);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    width: 100%;
-    max-width: 650px;
+body.dark-mode .btn-secondary {
+    background-color: #4a5568;
+    color: #e2e8f0;
 }
+body.dark-mode .btn-secondary:hover { background-color: #718096; }
 
-h2 {
-    margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 1.5rem;
-    color: #2d3748;
-    border-bottom: 2px solid var(--bg-color);
-    padding-bottom: 10px;
+body.dark-mode .zeiterfassung-table th {
+    background-color: #1a202c;
+    color: #a0aec0;
 }
+body.dark-mode .zeiterfassung-table tbody tr:hover { background-color: #3a4a5c; }
+body.dark-mode .zeiterfassung-table tr.row-pause { background-color: #252f3e; }
+body.dark-mode .total-row { background-color: #252f3e; }
+body.dark-mode .period-badge { background-color: #2d3748; color: #90cdf4; }
+body.dark-mode .nav-link { background-color: #2d3748; color: #90cdf4; }
+body.dark-mode .nav-link:hover { background-color: #4a5568; }
 
-.form-grid {
-    display: grid;
-    gap: 15px;
-}
-
-@media (min-width: 480px) {
-    .form-grid.double {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-.form-group {
-    margin-bottom: 18px;
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #4a5568;
-}
-
-input[type="text"],
-input[type="date"],
-input[type="time"],
-select,
-textarea {
-    padding: 10px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    background-color: #fff;
-    color: var(--text-color);
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-.checkbox-group {
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    margin-top: 5px;
-}
-
-.checkbox-group input {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-.checkbox-group label {
-    margin-bottom: 0;
-    user-select: none;
-}
-
-.button-group {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 25px;
-    border-top: 1px solid var(--bg-color);
-    padding-top: 20px;
-}
-
-.btn {
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
+/* Dark Mode Toggle Button */
+.btn-darkmode {
+    padding: 8px 14px;
+    background: #edf2f7;
+    color: #2b6cb0;
     border: none;
-    border-radius: var(--radius);
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
     cursor: pointer;
+    margin-left: 8px;
     transition: background-color 0.2s;
 }
+.btn-darkmode:hover { background: #cbd5e0; }
 
-.btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+body.dark-mode .btn-darkmode {
+    background-color: #2d3748;
+    color: #90cdf4;
 }
-
-.btn-primary:hover {
-    background-color: var(--primary-hover);
-}
-
-.btn-secondary {
-    background-color: #e2e8f0;
-    color: #4a5568;
-}
-
-.btn-secondary:hover {
-    background-color: #cbd5e0;
-}
-
-/* Container für die Liste */
-.list-container {
-    background-color: var(--card-bg);
-    padding: 30px;
-    border-radius: var(--radius);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 1100px; /* Breiter als das Formular für die Tabelle */
-    margin-top: 30px;
-}
-
-.list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 20px;
-    border-bottom: 2px solid var(--bg-color);
-    padding-bottom: 15px;
-}
-
-.list-header h2 {
-    margin: 0;
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-/* Filterleiste */
-.filter-bar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.period-badge {
-    font-weight: 600;
-    background-color: var(--bg-color);
-    padding: 8px 16px;
-    border-radius: 20px;
-    color: var(--primary-color);
-}
-
-.btn-small {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    background-color: #e2e8f0;
-    color: #4a5568;
-}
-
-/* Tabellen-Styling */
-.table-responsive {
-    overflow-x: auto; /* Scrollbar bei kleinen Bildschirmen */
-}
-
-.zeiterfassung-table {
-    width: 100%;
-    border-collapse: collapse;
-    text-align: left;
-    font-size: 0.95rem;
-}
-
-.zeiterfassung-table th, 
-.zeiterfassung-table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.zeiterfassung-table th {
-    background-color: var(--bg-color);
-    color: #4a5568;
-    font-weight: 600;
-}
-
-.zeiterfassung-table tbody tr:hover {
-    background-color: #f8fafc;
-}
-
-/* Spezielle Formatierung für Pausenzeilen */
-.zeiterfassung-table tr.row-pause {
-    color: #a0aec0;
-    background-color: #f7fafc;
-    font-style: italic;
-}
-
-/* Summenzeile */
-.total-row {
-    font-weight: bold;
-    background-color: #edf2f7;
-    border-top: 2px solid var(--border-color);
-}
-
-.total-row td {
-    padding: 15px;
-}
-
-/* Aktion-Buttons (Bearbeiten/Löschen) */
-.action-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.1rem;
-    padding: 0 5px;
-    transition: transform 0.1s;
-}
-
-.action-btn:hover {
-    transform: scale(1.2);
-}
+body.dark-mode .btn-darkmode:hover { background-color: #4a5568; }
