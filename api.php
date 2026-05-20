@@ -3,10 +3,10 @@
 header("Content-Type: application/json; charset=UTF-8");
 
 // 1. DATENBANK-ZUGANGSDATEN (Bitte anpassen!)
-$host     = "mysqlsvr88.world4you.com"; // Meistens 'localhost' oder eine IP-Adresse
-$db_name  = "7850162db1";
-$username = "sql1477474";
-$password = "i@eb4+3c";
+$host     = ""; // Meistens 'localhost' oder eine IP-Adresse
+$db_name  = "";
+$username = "";
+$password = "";
 
 try {
     // Verbindung über PDO (sicher vor SQL-Injections)
