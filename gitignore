@@ -1,0 +1,13 @@
+# Datenbankzugangsdaten – NIEMALS ins Repository!
+config.php
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# PHP-Logs
+*.log

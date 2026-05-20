@@ -1,0 +1,7 @@
+# .htaccess
+# Schützt config.php vor direktem Aufruf im Browser
+
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
