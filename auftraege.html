@@ -6,92 +6,148 @@
     <title>Auftragsverwaltung (Codes)</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Kleine visuelle Anpassung für die Navigation */
-        .nav-bar { margin-bottom: 20px; text-align: left; max-width: 1100px; width: 100%; margin: 0 auto 20px auto; }
-        .nav-link { display: inline-block; padding: 10px 15px; background: #edf2f7; color: #2b6cb0; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        /* Seitenlayout: fixierter Header + scrollbarer Inhalt */
+        body {
+            display: block;
+            padding: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 200;
+            background-color: var(--bg-color);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-link {
+            display: inline-block;
+            padding: 8px 14px;
+            background: #edf2f7;
+            color: #2b6cb0;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
         .nav-link:hover { background: #cbd5e0; }
+
+        /* Fixierter Formular-Bereich */
+        .sticky-form-wrapper {
+            position: sticky;
+            top: 45px; /* Höhe der nav-bar */
+            z-index: 100;
+            background-color: var(--bg-color);
+            padding: 16px 20px 0 20px;
+            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.08);
+        }
+
+        .sticky-form-wrapper .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Scrollbarer Listenbereich */
+        .scroll-area {
+            padding: 20px;
+        }
+
+        .scroll-area .list-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Navigation -->
     <div class="nav-bar">
         <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
     </div>
 
-    <div class="form-container" style="max-width: 800px; margin-bottom: 30px;">
-        <h2>📂 Neuen Auftrag (Code) anlegen</h2>
-        <form id="auftrag-form">
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="code">Code:</label>
-                    <input type="text" id="code" name="code" required placeholder="z.B. A100">
+    <!-- Fixierter Formular-Bereich -->
+    <div class="sticky-form-wrapper">
+        <div class="form-container">
+            <h2>📂 Neuen Auftrag (Code) anlegen</h2>
+            <form id="auftrag-form">
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="code">Code:</label>
+                        <input type="text" id="code" name="code" required placeholder="z.B. A100">
+                    </div>
+                    <div class="form-group">
+                        <label for="auftrag_kuerzel">Auftrag Kürzel:</label>
+                        <input type="text" id="auftrag_kuerzel" name="auftrag_kuerzel" required placeholder="z.B. PROJ1">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="auftrag_kuerzel">Auftrag Kürzel:</label>
-                    <input type="text" id="auftrag_kuerzel" name="auftrag_kuerzel" required placeholder="z.B. PROJ1">
-                </div>
-            </div>
 
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="leistungsart_id">Leistungsart:</label>
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="leistungsart_id">Leistungsart:</label>
                         <select id="leistungsart_id" name="leistungsart_id" required>
                             <option value="">-- Bitte wählen --</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bezeichnung">Auftrag Bezeichnung:</label>
+                        <input type="text" id="bezeichnung" name="bezeichnung" placeholder="Beschreibung des Auftrags">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="bezeichnung">Auftrag Bezeichnung:</label>
-                    <input type="text" id="bezeichnung" name="bezeichnung" placeholder="Beschreibung des Auftrags">
-                </div>
-            </div>
 
-            <div class="form-grid double">
-                <div class="form-group">
-                    <label for="gueltig_von">Gültig von:</label>
-                    <input type="date" id="gueltig_von" name="gueltig_von">
+                <div class="form-grid double">
+                    <div class="form-group">
+                        <label for="gueltig_von">Gültig von:</label>
+                        <input type="date" id="gueltig_von" name="gueltig_von">
+                    </div>
+                    <div class="form-group">
+                        <label for="gueltig_bis">Gültig bis:</label>
+                        <input type="date" id="gueltig_bis" name="gueltig_bis">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="gueltig_bis">Gültig bis:</label>
-                    <input type="date" id="gueltig_bis" name="gueltig_bis">
+
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="export_taetigkeit" name="export_taetigkeit" checked>
+                    <label for="export_taetigkeit">Export Tätigkeit</label>
                 </div>
-            </div>
 
-            <div class="form-group checkbox-group">
-                <input type="checkbox" id="export_taetigkeit" name="export_taetigkeit" checked>
-                <label for="export_taetigkeit">Export Tätigkeit</label>
-            </div>
-
-            <div class="button-group">
-                <button type="submit" class="btn btn-primary">Auftrag speichern</button>
-            </div>
-        </form>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Auftrag speichern</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="list-container" style="max-width: 800px;">
-        <h2>📋 Vorhandene Aufträge (Codes)</h2>
-        <div class="table-responsive">
-            <table class="zeiterfassung-table">
-                <thead>
-                    <tr>
-                        <th>Code</th>
-                        <th>Auftrag Kürzel</th>
-                        <th>Leistungsart</th>
-                        <th>Bezeichnung</th>
-                        <th>Gültigkeit</th>
-                        <th>Export</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody id="auftraege-table-body">
+    <!-- Scrollbarer Listenbereich -->
+    <div class="scroll-area">
+        <div class="list-container">
+            <h2>📋 Vorhandene Aufträge (Codes)</h2>
+            <div class="table-responsive">
+                <table class="zeiterfassung-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Auftrag Kürzel</th>
+                            <th>Leistungsart</th>
+                            <th>Bezeichnung</th>
+                            <th>Gültigkeit</th>
+                            <th>Export</th>
+                            <th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auftraege-table-body">
                     </tbody>
-            </table>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('auftrag-form');
-            
+
             // 1. Leistungsarten für das Dropdown laden
             fetch('api_auftraege.php?typ=leistungsarten')
                 .then(res => res.json())
@@ -152,6 +208,7 @@
                     alert(result.message);
                     if (result.status === 'success') {
                         form.reset();
+                        document.getElementById('export_taetigkeit').checked = true;
                         ladeAuftraege();
                     }
                 });
