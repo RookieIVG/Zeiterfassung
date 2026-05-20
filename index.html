@@ -10,11 +10,11 @@
 
     <div class="form-container">
         <div style="margin-bottom: 15px; text-align: right;">
-    <a href="auftraege.html" class="btn btn-small" style="text-decoration: none; display: inline-block;">📂 Aufträge verwalten</a>
-</div>
+            <a href="auftraege.html" class="btn btn-small" style="text-decoration: none; display: inline-block;">📂 Aufträge verwalten</a>
+        </div>
         <h2>⏱️ Neue Zeit erfassen</h2>
         <form id="zeiterfassung-form">
-            
+
             <div class="form-grid double">
                 <div class="form-group">
                     <label for="datum_ze">Datum (DatumZE):</label>
@@ -34,7 +34,6 @@
                 <div class="form-group">
                     <label for="zeit_von">Von:</label>
                     <input type="time" id="zeit_von" name="zeit_von" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
-                   
                 </div>
                 <div class="form-group">
                     <label for="zeit_bis">Bis:</label>
@@ -44,7 +43,8 @@
 
             <div class="form-grid double">
                 <div class="form-group">
-                    <label for="auftrag_code">Auftrag (Code):</label>
+                    <!-- FIX: for="auftrag_id" statt for="auftrag_code" -->
+                    <label for="auftrag_id">Auftrag (Code):</label>
                     <select id="auftrag_id" name="auftrag_id" required>
                         <option value="">-- Bitte wählen --</option>
                     </select>
@@ -83,48 +83,50 @@
 
         </form>
     </div>
-<div class="list-container">
-    <div class="list-header">
-        <h2>📊 Gebuchte Zeiten</h2>
-        <div class="filter-bar">
-            <button id="btn-prev-week" class="btn btn-small">◀ Letzte Woche</button>
-            <span id="current-period-display" class="period-badge">KW 21 (Aktuelle Woche)</span>
-            <button id="btn-next-week" class="btn btn-small">Nächste Woche ▶</button>
-            
-            <select id="filter-buchungsart">
-                <option value="alle">Alle Buchungsarten</option>
-                <option value="Arbeitszeit">Arbeitszeit</option>
-                <option value="Pause">Pause</option>
-                <option value="Dienstreise">Dienstreise</option>
-            </select>
+
+    <div class="list-container">
+        <div class="list-header">
+            <h2>📊 Gebuchte Zeiten</h2>
+            <div class="filter-bar">
+                <button id="btn-prev-week" class="btn btn-small">◀ Letzte Woche</button>
+                <span id="current-period-display" class="period-badge">KW 21 (Aktuelle Woche)</span>
+                <button id="btn-next-week" class="btn btn-small">Nächste Woche ▶</button>
+
+                <select id="filter-buchungsart">
+                    <option value="alle">Alle Buchungsarten</option>
+                    <option value="Arbeitszeit">Arbeitszeit</option>
+                    <option value="Pause">Pause</option>
+                    <option value="Dienstreise">Dienstreise</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="zeiterfassung-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Buchungsart</th>
+                        <th>Von - Bis</th>
+                        <th>Dauer</th>
+                        <th>Auftrag (Code)</th>
+                        <th>Tätigkeit / Anmerkung</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="zeit-eintraege-body">
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
+                        <td id="total-hours">00:00 Std.</td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="zeiterfassung-table">
-            <thead>
-                <tr>
-                    <th>Datum</th>
-                    <th>Buchungsart</th>
-                    <th>Von - Bis</th>
-                    <th>Dauer</th>
-                    <th>Auftrag (Code)</th>
-                    <th>Tätigkeit / Anmerkung</th>
-                    <th>Aktionen</th>
-                </tr>
-            </thead>
-            <tbody id="zeit-eintraege-body">
-                </tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
-                    <td id="total-hours">00:00 Std.</td>
-                    <td colspan="3"></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
     <script src="script.js"></script>
 </body>
 </html>

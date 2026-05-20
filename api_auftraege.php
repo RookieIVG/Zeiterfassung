@@ -2,10 +2,11 @@
 // api_auftraege.php
 header("Content-Type: application/json; charset=UTF-8");
 
-$host     = "localhost"; 
-$db_name  = "dein_datenbankname";
-$username = "dein_datenbank_user";
-$password = "dein_datenbank_passwort";
+// FIX: Echte Zugangsdaten (identisch mit api.php)
+$host     = "mysqlsvr88.world4you.com";
+$db_name  = "7850162db1";
+$username = "sql1477474";
+$password = "i@eb4+3c";
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db_name;charset=utf8mb4", $username, $password, [
@@ -21,7 +22,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // 1. GET: Daten abfragen
 if ($method === 'GET') {
-    // Wenn 'typ=leistungsarten' übergeben wird, laden wir die Leistungsarten fürs Formular
     if (isset($_GET['typ']) && $_GET['typ'] === 'leistungsarten') {
         try {
             $stmt = $pdo->query("SELECT id, kuerzel, bezeichnung FROM leistungsarten ORDER BY kuerzel");
@@ -32,7 +32,6 @@ if ($method === 'GET') {
         exit;
     }
 
-    // Standardmäßig: Alle Aufträge inkl. ihrer Leistungsart abfragen (JOIN)
     try {
         $sql = "SELECT a.*, l.kuerzel AS leistungsart_kuerzel 
                 FROM auftraege a 
@@ -60,21 +59,20 @@ if ($method === 'POST') {
         $sql = "INSERT INTO auftraege 
                 (code, auftrag_kuerzel, bezeichnung, gueltig_von, gueltig_bis, export_taetigkeit, leistungsart_id) 
                 VALUES (:code, :auftrag_kuerzel, :bezeichnung, :gueltig_von, :gueltig_bis, :export_taetigkeit, :leistungsart_id)";
-        
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            ':code'             => $data['code'],
-            ':auftrag_kuerzel'  => $data['auftrag_kuerzel'],
-            ':bezeichnung'      => !empty($data['bezeichnung']) ? $data['bezeichnung'] : null,
-            ':gueltig_von'      => !empty($data['gueltig_von']) ? $data['gueltig_von'] : null,
-            ':gueltig_bis'      => !empty($data['gueltig_bis']) ? $data['gueltig_bis'] : null,
-            ':export_taetigkeit'=> $data['export_taetigkeit'] ? 1 : 0,
-            ':leistungsart_id'  => !empty($data['leistungsart_id']) ? $data['leistungsart_id'] : null
+            ':code'              => $data['code'],
+            ':auftrag_kuerzel'   => $data['auftrag_kuerzel'],
+            ':bezeichnung'       => !empty($data['bezeichnung']) ? $data['bezeichnung'] : null,
+            ':gueltig_von'       => !empty($data['gueltig_von']) ? $data['gueltig_von'] : null,
+            ':gueltig_bis'       => !empty($data['gueltig_bis']) ? $data['gueltig_bis'] : null,
+            ':export_taetigkeit' => $data['export_taetigkeit'] ? 1 : 0,
+            ':leistungsart_id'   => !empty($data['leistungsart_id']) ? $data['leistungsart_id'] : null
         ]);
 
         echo json_encode(["status" => "success", "message" => "Auftrag erfolgreich angelegt!"]);
     } catch (PDOException $e) {
-        // Abfangen, falls Code + Auftrag_Kürzel bereits existieren (Unique Constraint)
         if ($e->getCode() == 23000) {
             echo json_encode(["status" => "error", "message" => "Diese Kombination aus Code und Auftrag-Kürzel existiert bereits."]);
         } else {
@@ -92,7 +90,6 @@ if ($method === 'DELETE') {
             $stmt->execute([':id' => $_GET['id']]);
             echo json_encode(["status" => "success", "message" => "Auftrag gelöscht."]);
         } catch (PDOException $e) {
-            // Greift, wenn noch Zeiten auf diesen Auftrag gebucht sind (RESTRICT)
             echo json_encode(["status" => "error", "message" => "Löschen nicht möglich: Es sind bereits Zeiten auf diesen Auftrag gebucht."]);
         }
     }
