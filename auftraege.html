@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auftragsverwaltung (Codes)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Kleine visuelle Anpassung für die Navigation */
+        .nav-bar { margin-bottom: 20px; text-align: left; max-width: 1100px; width: 100%; margin: 0 auto 20px auto; }
+        .nav-link { display: inline-block; padding: 10px 15px; background: #edf2f7; color: #2b6cb0; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .nav-link:hover { background: #cbd5e0; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
+    </div>
+
+    <div class="form-container" style="max-width: 800px; margin-bottom: 30px;">
+        <h2>📂 Neuen Auftrag (Code) anlegen</h2>
+        <form id="auftrag-form">
+            <div class="form-grid double">
+                <div class="form-group">
+                    <label for="code">Code:</label>
+                    <input type="text" id="code" name="code" required placeholder="z.B. A100">
+                </div>
+                <div class="form-group">
+                    <label for="auftrag_kuerzel">Auftrag Kürzel:</label>
+                    <input type="text" id="auftrag_kuerzel" name="auftrag_kuerzel" required placeholder="z.B. PROJ1">
+                </div>
+            </div>
+
+            <div class="form-grid double">
+                <div class="form-group">
+                    <label for="leistungsart_id">Leistungsart:</label>
+                        <select id="leistungsart_id" name="leistungsart_id" required>
+                            <option value="">-- Bitte wählen --</option>
+                        </select>
+                </div>
+                <div class="form-group">
+                    <label for="bezeichnung">Auftrag Bezeichnung:</label>
+                    <input type="text" id="bezeichnung" name="bezeichnung" placeholder="Beschreibung des Auftrags">
+                </div>
+            </div>
+
+            <div class="form-grid double">
+                <div class="form-group">
+                    <label for="gueltig_von">Gültig von:</label>
+                    <input type="date" id="gueltig_von" name="gueltig_von">
+                </div>
+                <div class="form-group">
+                    <label for="gueltig_bis">Gültig bis:</label>
+                    <input type="date" id="gueltig_bis" name="gueltig_bis">
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="export_taetigkeit" name="export_taetigkeit" checked>
+                <label for="export_taetigkeit">Export Tätigkeit</label>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">Auftrag speichern</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="list-container" style="max-width: 800px;">
+        <h2>📋 Vorhandene Aufträge (Codes)</h2>
+        <div class="table-responsive">
+            <table class="zeiterfassung-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Auftrag Kürzel</th>
+                        <th>Leistungsart</th>
+                        <th>Bezeichnung</th>
+                        <th>Gültigkeit</th>
+                        <th>Export</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="auftraege-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('auftrag-form');
+            
+            // 1. Leistungsarten für das Dropdown laden
+            fetch('api_auftraege.php?typ=leistungsarten')
+                .then(res => res.json())
+                .then(leistungsarten => {
+                    const select = document.getElementById('leistungsart_id');
+                    leistungsarten.forEach(l => {
+                        const opt = document.createElement('option');
+                        opt.value = l.id;
+                        opt.textContent = `${l.kuerzel} - ${l.bezeichnung}`;
+                        select.appendChild(opt);
+                    });
+                });
+
+            // 2. Aufträge für die Tabelle laden
+            function ladeAuftraege() {
+                fetch('api_auftraege.php')
+                    .then(res => res.json())
+                    .then(auftraege => {
+                        const tbody = document.getElementById('auftraege-table-body');
+                        tbody.innerHTML = '';
+                        auftraege.forEach(a => {
+                            const von = a.gueltig_von ? new Date(a.gueltig_von).toLocaleDateString('de-DE') : '-';
+                            const bis = a.gueltig_bis ? new Date(a.gueltig_bis).toLocaleDateString('de-DE') : '-';
+                            const row = `
+                                <tr>
+                                    <td><strong>${a.code}</strong></td>
+                                    <td>${a.auftrag_kuerzel}</td>
+                                    <td><span class="period-badge" style="font-size:0.8rem; padding:4px 8px;">${a.leistungsart_kuerzel || '-'}</span></td>
+                                    <td>${a.bezeichnung || '-'}</td>
+                                    <td><small>${von} bis ${bis}</small></td>
+                                    <td>${a.export_taetigkeit == 1 ? 'Ja' : 'Nein'}</td>
+                                    <td>
+                                        <button class="action-btn" title="Löschen" onclick="loeschen(${a.id})">❌</button>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.insertAdjacentHTML('beforeend', row);
+                        });
+                    });
+            }
+
+            ladeAuftraege();
+
+            // 3. Auftrag speichern
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                data.export_taetigkeit = document.getElementById('export_taetigkeit').checked;
+
+                fetch('api_auftraege.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                .then(res => res.json())
+                .then(result => {
+                    alert(result.message);
+                    if (result.status === 'success') {
+                        form.reset();
+                        ladeAuftraege();
+                    }
+                });
+            });
+
+            // Global machen, damit der Button im HTML es aufrufen kann
+            window.loeschen = function(id) {
+                if (confirm('Möchtest du diesen Auftrag wirklich löschen?')) {
+                    fetch(`api_auftraege.php?id=${id}`, { method: 'DELETE' })
+                        .then(res => res.json())
+                        .then(result => {
+                            alert(result.message);
+                            ladeAuftraege();
+                        });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
