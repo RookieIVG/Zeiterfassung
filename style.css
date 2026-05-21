@@ -3,18 +3,20 @@
 }
 
 :root {
-    --bg-color: #f4f6f9;
+    --bg-color: #f0f4f2;          /* helles Grün-Weiß als Hintergrund */
     --card-bg: #ffffff;
-    --text-color: #333333;
-    --primary-color: #2b6cb0;
-    --primary-hover: #1a446c;
-    --border-color: #cbd5e0;
-    --focus-ring: #90cdf4;
+    --text-color: #1a1a1a;
+    --primary-color: #007E36;     /* CI Grün */
+    --primary-hover: #005a27;
+    --accent-color: #169FDB;      /* CI Blau */
+    --accent-hover: #0f7aaa;
+    --border-color: #c8ddd0;
+    --focus-ring: #84cfad;
     --radius: 8px;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: Tahoma, "Segoe UI", Arial, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     margin: 0;
@@ -27,8 +29,9 @@ h2 {
     margin-bottom: 20px;
     font-size: 1.3rem;
     color: #2d3748;
-    border-bottom: 2px solid var(--bg-color);
+    border-bottom: 2px solid #007E36;
     padding-bottom: 10px;
+    color: #007E36;
 }
 
 /* ── Navigationsleiste ── */
@@ -38,22 +41,23 @@ h2 {
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
+    background-color: #007E36;
+    border-bottom: none;
     height: 48px;
 }
 
 .nav-link {
     display: inline-block;
     padding: 6px 14px;
-    background: #edf2f7;
-    color: #2b6cb0;
+    background: rgba(255,255,255,0.15);
+    color: #ffffff;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
     font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.3);
 }
-.nav-link:hover { background: #cbd5e0; }
+.nav-link:hover { background: rgba(255,255,255,0.28); }
 
 /* ── Zweispaltiges Hauptlayout ── */
 .main-layout {
@@ -124,8 +128,8 @@ textarea {
 
 input:focus, select:focus, textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--focus-ring);
+    border-color: #007E36;
+    box-shadow: 0 0 0 3px #84cfad;
 }
 
 .checkbox-group {
@@ -171,10 +175,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: #007E36;
+    color: #ffffff;
 }
-.btn-primary:hover { background-color: var(--primary-hover); }
+.btn-primary:hover { background-color: #005a27; }
 
 .btn-secondary {
     background-color: #e2e8f0;
@@ -218,10 +222,10 @@ input:focus, select:focus, textarea:focus {
 
 .period-badge {
     font-weight: 600;
-    background-color: var(--bg-color);
+    background-color: #169FDB;
+    color: #ffffff;
     padding: 5px 12px;
     border-radius: 20px;
-    color: var(--primary-color);
     font-size: 0.85rem;
     white-space: nowrap;
     min-width: 180px;
@@ -233,14 +237,22 @@ input:focus, select:focus, textarea:focus {
     padding: 5px 10px;
     font-size: 0.82rem;
     font-weight: 600;
-    background-color: #e2e8f0;
-    color: #4a5568;
-    border: none;
+    background-color: #e8f5ee;
+    color: #007E36;
+    border: 1px solid #c8ddd0;
     border-radius: var(--radius);
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.btn-small:hover { background-color: #cbd5e0; }
+.btn-small:hover { background-color: #c8ddd0; }
+
+/* btn-small in der Nav-Bar: weiß auf Grün */
+.nav-bar .btn-small {
+    background-color: rgba(255,255,255,0.15);
+    color: #ffffff;
+    border-color: rgba(255,255,255,0.3);
+}
+.nav-bar .btn-small:hover { background-color: rgba(255,255,255,0.28); }
 
 /* ── Tabelle ── */
 .table-responsive {
@@ -287,9 +299,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .zeiterfassung-table th {
-    background-color: var(--bg-color);
-    color: #4a5568;
-    font-weight: 600;
+    background-color: #007E36;
+    color: #ffffff;
+    font-weight: bold;
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
@@ -305,8 +317,9 @@ input:focus, select:focus, textarea:focus {
 
 .total-row {
     font-weight: bold;
-    background-color: #edf2f7;
-    border-top: 2px solid var(--border-color);
+    background-color: #d4edda;
+    border-top: 2px solid #007E36;
+    color: #007E36;
 }
 
 .total-row td { padding: 10px 12px; }
@@ -344,10 +357,10 @@ body.dark-mode {
     --card-bg: #2d3748;
     --text-color: #e2e8f0;
     --border-color: #4a5568;
-    --focus-ring: #2b6cb0;
+    --focus-ring: #007E36;
 }
 
-body.dark-mode h2 { color: #e2e8f0; }
+body.dark-mode h2 { color: #5dba7e; border-bottom-color: #007E36; }
 body.dark-mode label { color: #a0aec0; }
 
 body.dark-mode input[type="text"],
@@ -364,33 +377,35 @@ body.dark-mode textarea {
 
 body.dark-mode .btn-secondary { background-color: #4a5568; color: #e2e8f0; }
 body.dark-mode .btn-secondary:hover { background-color: #718096; }
-body.dark-mode .btn-small { background-color: #4a5568; color: #e2e8f0; }
+body.dark-mode .btn-small { background-color: #4a5568; color: #e2e8f0; border-color: #718096; }
 body.dark-mode .btn-small:hover { background-color: #718096; }
+body.dark-mode .nav-bar .btn-small { background-color: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.2); }
+body.dark-mode .nav-bar .btn-small:hover { background-color: rgba(255,255,255,0.2); }
 
-body.dark-mode .zeiterfassung-table th { background-color: #1a202c; color: #a0aec0; }
-body.dark-mode .zeiterfassung-table td { border-bottom-color: #4a5568; }
+body.dark-mode .zeiterfassung-table th { background-color: #005a27; color: #e2f0e8; }
+body.dark-mode .zeiterfassung-table td { border-bottom-color: #2d4a35; }
 body.dark-mode .zeiterfassung-table tbody tr:hover { background-color: #3a4a5c; }
 body.dark-mode .zeiterfassung-table tr.row-pause { background-color: #252f3e; color: #718096; }
-body.dark-mode .total-row { background-color: #252f3e; }
+body.dark-mode .total-row { background-color: #252f3e; color: #5dba7e; border-top-color: #007E36; }
 body.dark-mode .list-header { border-bottom-color: #4a5568; }
-body.dark-mode .period-badge { background-color: #1a202c; color: #90cdf4; }
-body.dark-mode .nav-link { background-color: #2d3748; color: #90cdf4; }
-body.dark-mode .nav-link:hover { background-color: #4a5568; }
+body.dark-mode .period-badge { background-color: #0d6fa8; color: #ffffff; }
+body.dark-mode .nav-link { background-color: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.2); }
+body.dark-mode .nav-link:hover { background-color: rgba(255,255,255,0.2); }
 
 .btn-darkmode {
     padding: 6px 12px;
-    background: #edf2f7;
-    color: #2b6cb0;
-    border: none;
+    background: rgba(255,255,255,0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 5px;
     font-size: 0.95rem;
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.btn-darkmode:hover { background: #cbd5e0; }
-body.dark-mode .btn-darkmode { background-color: #2d3748; color: #90cdf4; }
-body.dark-mode .btn-darkmode:hover { background-color: #4a5568; }
+.btn-darkmode:hover { background: rgba(255,255,255,0.28); }
+body.dark-mode .btn-darkmode { background-color: rgba(255,255,255,0.1); color: #ffffff; }
+body.dark-mode .btn-darkmode:hover { background-color: rgba(255,255,255,0.2); }
 
 /* ── Filter-Bar: einheitliche Größe ── */
 #filter-buchungsart {
@@ -453,8 +468,8 @@ body.dark-mode .filter-toggle { color: #a0aec0; }
 /* Wochentrennlinie */
 .row-week-separator td {
     padding: 0 !important;
-    border-bottom: 3px solid var(--primary-color) !important;
-    opacity: 0.4;
+    border-bottom: 3px solid #007E36 !important;
+    opacity: 0.5;
 }
 
 /* ── Combobox (Auftrag-Suche) ── */
@@ -520,4 +535,89 @@ body.dark-mode .filter-toggle { color: #a0aec0; }
 body.dark-mode .combobox-dropdown {
     background-color: var(--card-bg);
     border-color: var(--border-color);
+}
+
+/* Modal Passwort ändern - Dark Mode */
+body.dark-mode #modal-passwort > div {
+    background-color: var(--card-bg);
+}
+body.dark-mode #modal-error {
+    background: #2d1515;
+    color: #fc8181;
+    border-color: #742a2a;
+}
+
+/* Tages- und Wochensummen */
+.row-day-sum td {
+    background-color: #e8f5ee;
+    border-bottom: 1px solid #c8ddd0;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    color: #007E36;
+}
+
+.row-week-sum td {
+    background-color: #d4edda;
+    border-bottom: 1px solid #007E36;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    color: #005a27;
+    font-weight: bold;
+}
+
+body.dark-mode .row-day-sum td {
+    background-color: #2a3444;
+    color: #5dba7e;
+}
+
+body.dark-mode .row-week-sum td {
+    background-color: #252f3e;
+    color: #5dba7e;
+    font-weight: bold;
+}
+
+/* Auswertung: letzte Spalte (Tätigkeit) linksbündig */
+#auswertung-table td:last-child,
+#auswertung-table th:last-child {
+    text-align: left;
+}
+
+/* ── Lucide Icons ── */
+.lucide-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.action-btn .lucide-icon {
+    width: 15px;
+    height: 15px;
+}
+
+.nav-link .lucide-icon,
+.btn-darkmode .lucide-icon {
+    width: 15px;
+    height: 15px;
+    margin-right: 4px;
+}
+
+.btn .lucide-icon {
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+}
+
+h2 .lucide-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+    color: #007E36;
+}
+
+/* Action-Buttons im Dark Mode heller */
+body.dark-mode .action-btn svg {
+    stroke: #a0aec0;
+}
+body.dark-mode .action-btn:hover svg {
+    stroke: #e2e8f0;
 }

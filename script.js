@@ -41,12 +41,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function zeigeDropdown(liste) {
         auftragDropdown.innerHTML = '';
         if (liste.length === 0) {
-            auftragDropdown.innerHTML = '<div class="combobox-option-empty">Keine Treffer</div>';
+            const empty = document.createElement('div');
+            empty.className = 'combobox-option-empty';
+            empty.textContent = 'Keine Treffer';
+            auftragDropdown.appendChild(empty);
         } else {
             liste.forEach(a => {
                 const div = document.createElement('div');
                 div.className = 'combobox-option';
-                div.innerHTML = `<span class="option-code">${a.code} | ${a.auftrag_kuerzel}</span><span class="option-sub">${a.bezeichnung || ''}</span>`;
+                // XSS-Fix: textContent statt innerHTML
+                const spanCode = document.createElement('span');
+                spanCode.className = 'option-code';
+                spanCode.textContent = `${a.code} | ${a.auftrag_kuerzel}`;
+                const spanSub = document.createElement('span');
+                spanSub.className = 'option-sub';
+                spanSub.textContent = a.bezeichnung || '';
+                div.appendChild(spanCode);
+                div.appendChild(spanSub);
                 div.addEventListener('mousedown', (e) => {
                     e.preventDefault();
                     auftragSearch.value  = `${a.code} | ${a.auftrag_kuerzel}`;
@@ -154,18 +165,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = isEdit ? `api.php?id=${bearbeitungId}` : 'api.php';
         const method = isEdit ? 'PUT' : 'POST';
 
-        fetch(url, {
+        apiFetch(url, {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(buchung)
         })
-        .then(response => response.json())
         .then(result => {
             if (result.status === 'success') {
+                // Bis-Zeit merken für nächste Von-Zeit
+                const zeitBisWert = document.getElementById('zeit_bis').value;
+                const warNeueBuchung = bearbeitungId === null;
+
                 form.reset();
                 datumInput.value = new Date().toISOString().split('T')[0];
+                document.getElementById('auftrag_search').value = '';
                 bearbeitungId = null;
                 submitBtn.textContent = 'Zeit buchen';
+
+                // Nur bei neuen Buchungen (nicht beim Bearbeiten) die Von-Zeit vorbelegen
+                if (warNeueBuchung && zeitBisWert) {
+                    document.getElementById('zeit_von').value = zeitBisWert;
+                }
+
+                aktualisiereAuftragPflicht();
                 ladeGebuchteZeiten();
             } else {
                 alert('Fehler: ' + result.message);
@@ -183,10 +205,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // ========================================================
 function ladeGebuchteZeiten() {
     fetch('api.php')
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401) { window.location.href = 'login.html'; return null; }
+            return response.json();
+        })
         .then(daten => {
-            if (daten.status === 'error') {
-                console.error(daten.message);
+            if (!daten || !Array.isArray(daten)) {
+                if (daten && daten.message) console.error(daten.message);
                 return;
             }
 
@@ -230,13 +255,31 @@ function bearbeiten(id, eintrag) {
 }
 
 // ========================================================
+// SCHNELLKOPIEREN (Doppelklick: Auftrag, Tätigkeit, Anmerkungen übernehmen)
+// ========================================================
+function schnellkopieren(eintrag) {
+    document.getElementById('auftrag_id').value = eintrag.auftrag_id;
+    document.getElementById('auftrag_search').value = eintrag.auftrag_code
+        ? `${eintrag.auftrag_code} | ${eintrag.auftrag_kuerzel || ''}`
+        : '';
+    document.getElementById('taetigkeit').value = eintrag.taetigkeit || '';
+    document.getElementById('anmerkungen').value = eintrag.anmerkungen || '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Kurz aufleuchten lassen als visuelles Feedback
+    const auftragInput = document.getElementById('auftrag_search');
+    auftragInput.style.transition = 'background-color 0.3s';
+    auftragInput.style.backgroundColor = '#d4edda';
+    setTimeout(() => auftragInput.style.backgroundColor = '', 800);
+}
+
+// ========================================================
 // LÖSCHEN
 // ========================================================
 function loeschen(id) {
     if (!confirm('Diesen Eintrag wirklich löschen?')) return;
 
-    fetch(`api.php?id=${id}`, { method: 'DELETE' })
-        .then(res => res.json())
+    apiFetch(`api.php?id=${id}`, { method: 'DELETE' })
         .then(result => {
             if (result.status === 'success') ladeGebuchteZeiten();
             else alert('Fehler: ' + result.message);
@@ -269,62 +312,118 @@ function getKWNummer(datum) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
+function minZuString(min) {
+    return `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+}
+
+function summenZeile(label, minuten, cssClass) {
+    return `
+        <tr class="${cssClass}">
+            <td colspan="3" style="text-align:right; font-style:italic; padding-right:12px;">${label}</td>
+            <td><strong>${minZuString(minuten)}</strong></td>
+            <td colspan="4"></td>
+        </tr>`;
+}
+
 function renderTabelle(daten) {
     const tableBody = document.getElementById('zeit-eintraege-body');
     const totalHoursDisplay = document.getElementById('total-hours');
 
     tableBody.innerHTML = '';
     let gesamtMinutenArbeit = 0;
-    let letzteKW = null;
+
+    // Einträge nach Woche und Tag gruppieren
+    const gruppen = [];
+    let aktuelleWocheKey = null;
+    let aktuellerTagKey = null;
 
     daten.forEach(eintrag => {
-        const von = eintrag.zeit_von.substring(0, 5);
-        const bis = eintrag.zeit_bis.substring(0, 5);
-        const dauer = berechneDauer(von, bis);
-
-        if (eintrag.buchungsart !== 'Pause') {
-            gesamtMinutenArbeit += dauer.minuten;
-        }
-
-        // Wochentrennlinie einfügen
         const aktDatum = new Date(eintrag.datum_ze);
-        const aktKW = `${aktDatum.getFullYear()}-${getKWNummer(aktDatum)}`;
-        if (letzteKW !== null && aktKW !== letzteKW) {
-            tableBody.insertAdjacentHTML('beforeend', `<tr class="row-week-separator"><td colspan="8"></td></tr>`);
+        const tagKey = eintrag.datum_ze.substring(0, 10);
+        const kwKey  = `${aktDatum.getFullYear()}-${getKWNummer(aktDatum)}`;
+
+        if (kwKey !== aktuelleWocheKey) {
+            aktuelleWocheKey = kwKey;
+            aktuellerTagKey = null;
+            gruppen.push({ kw: getKWNummer(aktDatum), tage: [] });
         }
-        letzteKW = aktKW;
 
-        const rowClass = eintrag.buchungsart === 'Pause' ? 'class="row-pause"' : '';
-        const deutschesDatum = new Date(eintrag.datum_ze).toLocaleDateString('de-DE');
-        const auftragText = eintrag.auftrag_code
-            ? `${eintrag.auftrag_code} | ${eintrag.auftrag_kuerzel || ''}`
-            : '-';
+        const aktWoche = gruppen[gruppen.length - 1];
 
-        // Eintrag als JSON für den Bearbeiten-Button serialisieren
-        const eintragJson = JSON.stringify(eintrag).replace(/'/g, "\\'");
+        if (tagKey !== aktuellerTagKey) {
+            aktuellerTagKey = tagKey;
+            aktWoche.tage.push({ tagKey, datum: aktDatum, eintraege: [] });
+        }
 
-        const row = `
-            <tr ${rowClass}>
-                <td>${deutschesDatum}</td>
-                <td><strong>${eintrag.buchungsart}</strong></td>
-                <td>${von} - ${bis}</td>
-                <td>${dauer.string}</td>
-                <td>${auftragText}</td>
-                <td>${eintrag.meldungsnummer || '-'}</td>
-                <td>
-                    <strong>${eintrag.taetigkeit || '-'}</strong>
-                    ${eintrag.anmerkungen ? `<br><small style="color: #718096">${eintrag.anmerkungen}</small>` : ''}
-                </td>
-                <td>
-                    <button class="action-btn" title="Bearbeiten" onclick='bearbeiten(${eintrag.id}, ${JSON.stringify(eintrag)})'>✏️</button>
-                    <button class="action-btn" title="Löschen" onclick="loeschen(${eintrag.id})">❌</button>
-                </td>
-            </tr>
-        `;
-        tableBody.insertAdjacentHTML('beforeend', row);
+        aktWoche.tage[aktWoche.tage.length - 1].eintraege.push(eintrag);
     });
 
-    const stunden = Math.floor(gesamtMinutenArbeit / 60);
-    const minuten = gesamtMinutenArbeit % 60;
-    totalHoursDisplay.innerText = `${String(stunden).padStart(2, '0')}:${String(minuten).padStart(2, '0')}`;
+    // Rendern
+    gruppen.forEach((woche, wi) => {
+        let wochenMinuten = 0;
+
+        woche.tage.forEach(tag => {
+            let tagesMinuten = 0;
+
+            tag.eintraege.forEach(eintrag => {
+                const von = eintrag.zeit_von.substring(0, 5);
+                const bis = eintrag.zeit_bis.substring(0, 5);
+                const dauer = berechneDauer(von, bis);
+                const istPause = eintrag.buchungsart === 'Pause';
+
+                if (!istPause) {
+                    tagesMinuten    += dauer.minuten;
+                    wochenMinuten   += dauer.minuten;
+                    gesamtMinutenArbeit += dauer.minuten;
+                }
+
+                const rowClass = istPause ? 'class="row-pause"' : '';
+                const deutschesDatum = tag.datum.toLocaleDateString('de-DE');
+                const auftragText = eintrag.auftrag_code
+                    ? `${eintrag.auftrag_code} | ${eintrag.auftrag_kuerzel || ''}`
+                    : '-';
+
+                tableBody.insertAdjacentHTML('beforeend', `
+                    <tr ${rowClass} ondblclick='schnellkopieren(${JSON.stringify(eintrag)})' style="cursor:default;">
+                        <td>${deutschesDatum}</td>
+                        <td><strong>${eintrag.buchungsart}</strong></td>
+                        <td>${von} - ${bis}</td>
+                        <td>${dauer.string}</td>
+                        <td>${auftragText}</td>
+                        <td>${eintrag.meldungsnummer || '-'}</td>
+                        <td>
+                            <strong>${eintrag.taetigkeit || '-'}</strong>
+                            ${eintrag.anmerkungen ? `<br><small style="color:#718096">${eintrag.anmerkungen}</small>` : ''}
+                        </td>
+                        <td>
+                            <button class="action-btn" title="Bearbeiten" onclick='bearbeiten(${eintrag.id}, ${JSON.stringify(eintrag)})'><i data-lucide="pencil" class="lucide-icon"></i></button>
+                            <button class="action-btn" title="Löschen" onclick="loeschen(${eintrag.id})"><i data-lucide="x" class="lucide-icon"></i></button>
+                        </td>
+                    </tr>
+                `);
+            });
+
+            // Tagessumme nach jedem Tag
+            tableBody.insertAdjacentHTML('beforeend', summenZeile(
+                `Σ ${tag.datum.toLocaleDateString('de-DE')}`,
+                tagesMinuten,
+                'row-day-sum'
+            ));
+        });
+
+        // Wochensumme nach jeder Woche
+        tableBody.insertAdjacentHTML('beforeend', summenZeile(
+            `Σ KW ${woche.kw}`,
+            wochenMinuten,
+            'row-week-sum'
+        ));
+
+        // Trennlinie zwischen Wochen
+        if (wi < gruppen.length - 1) {
+            tableBody.insertAdjacentHTML('beforeend', '<tr class="row-week-separator"><td colspan="8"></td></tr>');
+        }
+    });
+
+    totalHoursDisplay.innerText = minZuString(gesamtMinutenArbeit);
+    refreshIcons();
 }

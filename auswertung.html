@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auswertung</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
+    <script src="icons.js"></script>
 </head>
 <body>
 
     <div class="nav-bar">
-        <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
-        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <a href="index.html" class="nav-link"><i data-lucide="arrow-right" class="lucide-icon"></i> Zur Zeiterfassung</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#ffffff; font-weight:600;"></span>
         <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
-        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten">🌙</button>
+        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten"><i data-lucide="moon" class="lucide-icon"></i></button>
     </div>
 
     <div class="main-layout">
 
         <!-- Linke Spalte: Einstellungen -->
         <div class="form-panel">
-            <h2>📊 Auswertung</h2>
+            <h2><i data-lucide="bar-chart-2" class="lucide-icon"></i> Auswertung</h2>
 
             <div class="form-grid double">
                 <div class="form-group">
@@ -38,7 +40,7 @@
             </div>
 
             <div class="button-group" style="border-top: none; padding-top: 0;">
-                <button class="btn btn-secondary" id="btn-download" disabled>⬇ ICS herunterladen</button>
+                <button class="btn btn-secondary" id="btn-download" disabled><i data-lucide="download" class="lucide-icon"></i> ICS herunterladen</button>
             </div>
         </div>
 
@@ -46,11 +48,11 @@
         <div class="list-panel">
             <div class="list-container">
                 <div class="list-header">
-                    <h2 id="vorschau-titel">📋 Vorschau</h2>
+                    <h2 id="vorschau-titel"><i data-lucide="clipboard-list" class="lucide-icon"></i> Vorschau</h2>
                     <span id="vorschau-info" class="period-badge" style="display:none;"></span>
                 </div>
                 <div class="table-responsive">
-                    <table class="zeiterfassung-table">
+                    <table class="zeiterfassung-table" id="auswertung-table">
                         <colgroup>
                             <col style="width: 105px;">
                             <col style="width: 120px;">
@@ -92,6 +94,26 @@
 
     </div>
 
+
+    <script>
+    // ── CSRF-Token Helper ──
+    let _csrfToken = '';
+    async function getCsrfToken() {
+        if (_csrfToken) return _csrfToken;
+        const res = await fetch('api_auth.php?action=csrf');
+        const data = await res.json();
+        _csrfToken = data.csrf_token || '';
+        return _csrfToken;
+    }
+    async function apiFetch(url, options = {}) {
+        const token = await getCsrfToken();
+        options.headers = options.headers || {};
+        options.headers['X-CSRF-Token'] = token;
+        const res = await fetch(url, options);
+        if (res.status === 401) { window.location.href = 'login.html'; return null; }
+        return res.json();
+    }
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -155,11 +177,11 @@
         const btnDark = document.getElementById('btn-darkmode');
         if (localStorage.getItem('darkmode') === '1') {
             document.body.classList.add('dark-mode');
-            btnDark.textContent = '☀️';
+            btnDark.innerHTML = '<i data-lucide="sun" class="lucide-icon"></i>'; refreshIcons();
         }
         btnDark.addEventListener('click', () => {
             const isDark = document.body.classList.toggle('dark-mode');
-            btnDark.textContent = isDark ? '☀️' : '🌙';
+            btnDark.innerHTML = isDark ? '<i data-lucide="sun" class="lucide-icon"></i>' : '<i data-lucide="moon" class="lucide-icon"></i>'; refreshIcons();
             localStorage.setItem('darkmode', isDark ? '1' : '0');
         });
 
@@ -210,7 +232,7 @@
                     const monatSelectLeer = document.getElementById('auswertung-monat');
                     const monatNameLeer = monatSelectLeer.options[monatSelectLeer.selectedIndex].text;
                     const aktJahrLeer = document.getElementById('auswertung-jahr').value;
-                    document.getElementById('vorschau-titel').textContent = `📋 Vorschau – ${monatNameLeer} ${aktJahrLeer}`;
+                    document.getElementById('vorschau-titel').innerHTML = `<i data-lucide="clipboard-list" class="lucide-icon"></i> Vorschau – ${monatNameLeer} ${aktJahrLeer}`; refreshIcons();
                     document.getElementById('vorschau-info').textContent  = '0 Einträge';
                     document.getElementById('vorschau-info').style.display = 'inline-block';
 
@@ -252,7 +274,7 @@
                     const monatSelect = document.getElementById('auswertung-monat');
                     const monatName = monatSelect.options[monatSelect.selectedIndex].text;
                     const aktJahr = document.getElementById('auswertung-jahr').value;
-                    document.getElementById('vorschau-titel').textContent = `📋 Vorschau – ${monatName} ${aktJahr}`;
+                    document.getElementById('vorschau-titel').innerHTML = `<i data-lucide="clipboard-list" class="lucide-icon"></i> Vorschau – ${monatName} ${aktJahr}`; refreshIcons();
                     document.getElementById('vorschau-info').textContent  = `${aktuelleEintraege.length} Einträge`;
                     document.getElementById('vorschau-info').style.display = 'inline-block';
                     document.getElementById('btn-download').disabled = false;

@@ -4,6 +4,18 @@ header("Content-Type: application/json; charset=UTF-8");
 require_once 'config.php';
 require_once 'auth_check.php';
 
+// ── Validierungsfunktionen ──
+function valDatum($val) {
+    $d = DateTime::createFromFormat('Y-m-d', $val);
+    return $d && $d->format('Y-m-d') === $val;
+}
+function valZeit($val) {
+    return preg_match('/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/', $val);
+}
+function valBuchungsart($val) {
+    return in_array($val, ['Arbeitszeit', 'Pause', 'Dienstreise']);
+}
+
 $current_user_id = (int) $_SESSION['user_id'];
 $ist_admin       = !empty($_SESSION['ist_admin']);
 $method          = $_SERVER['REQUEST_METHOD'];
@@ -116,7 +128,19 @@ if ($method === 'POST') {
         exit;
     }
 
-    // Zeitbuchung speichern
+    // Zeitbuchung speichern – Validierung
+    if (!valBuchungsart($data['buchungsart'] ?? '')) {
+        echo json_encode(["status" => "error", "message" => "Ungültige Buchungsart."]);
+        exit;
+    }
+    if (!valDatum($data['datum_ze'] ?? '')) {
+        echo json_encode(["status" => "error", "message" => "Ungültiges Datum."]);
+        exit;
+    }
+    if (!valZeit($data['zeit_von'] ?? '') || !valZeit($data['zeit_bis'] ?? '')) {
+        echo json_encode(["status" => "error", "message" => "Ungültiges Zeitformat."]);
+        exit;
+    }
     if (empty($data['auftrag_id']) && $data['buchungsart'] !== 'Pause') {
         echo json_encode(["status" => "error", "message" => "Kein Auftrag ausgewählt."]);
         exit;

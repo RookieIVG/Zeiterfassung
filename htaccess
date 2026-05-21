@@ -1,7 +1,22 @@
-# .htaccess
-# Schützt config.php vor direktem Aufruf im Browser
-
+# config.php vor direktem Aufruf schützen
 <Files "config.php">
     Order allow,deny
     Deny from all
 </Files>
+
+# auth_check.php vor direktem Aufruf schützen
+<Files "auth_check.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Security-Header
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "DENY"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Directory Listing deaktivieren
+Options -Indexes

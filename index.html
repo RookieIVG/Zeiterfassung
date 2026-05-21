@@ -5,23 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zeiterfassung</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
+    <script src="icons.js"></script>
 </head>
 <body>
 
     <div class="nav-bar">
-        <a href="users.html" class="nav-link" id="nav-users" style="display:none;">👥 Userverwaltung</a>
-        <a href="auftraege.html" class="nav-link">📂 Aufträge verwalten</a>
-        <a href="auswertung.html" class="nav-link">📊 Auswertung durchführen</a>
-        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <a href="users.html" class="nav-link" id="nav-users" style="display:none;"><i data-lucide="users" class="lucide-icon"></i> Userverwaltung</a>
+        <a href="auftraege.html" class="nav-link"><i data-lucide="folder-open" class="lucide-icon"></i> Aufträge verwalten</a>
+        <a href="auswertung.html" class="nav-link"><i data-lucide="bar-chart-2" class="lucide-icon"></i> Auswertung durchführen</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#ffffff; font-weight:600; cursor:pointer; text-decoration:underline dotted;" title="Passwort ändern"></span>
         <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
-        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten">🌙</button>
+        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten"><i data-lucide="moon" class="lucide-icon"></i></button>
     </div>
 
     <div class="main-layout">
 
         <!-- Linke Spalte: Formular -->
         <div class="form-panel">
-            <h2>⏱️ Neue Zeit erfassen</h2>
+            <h2><i data-lucide="timer" class="lucide-icon"></i> Neue Zeit erfassen</h2>
             <form id="zeiterfassung-form">
 
                 <div class="form-grid double">
@@ -92,7 +94,7 @@
         <div class="list-panel">
             <div class="list-container">
                 <div class="list-header">
-                    <h2>📊 Gebuchte Zeiten</h2>
+                    <h2><i data-lucide="bar-chart-2" class="lucide-icon"></i> Gebuchte Zeiten</h2>
                     <div class="filter-bar">
                         <select id="filter-buchungsart">
                             <option value="alle">Alle Buchungsarten</option>
@@ -100,9 +102,9 @@
                             <option value="Pause">Pause</option>
                             <option value="Dienstreise">Dienstreise</option>
                         </select>
-                        <button id="btn-prev-week" class="btn btn-small">◀</button>
+                        <button id="btn-prev-week" class="btn btn-small"><i data-lucide="chevron-left" class="lucide-icon"></i></button>
                         <span id="current-period-display" class="period-badge">–</span>
-                        <button id="btn-next-week" class="btn btn-small">▶</button>
+                        <button id="btn-next-week" class="btn btn-small"><i data-lucide="chevron-right" class="lucide-icon"></i></button>
                     </div>
                 </div>
 
@@ -145,21 +147,65 @@
 
     </div>
 
+    <!-- Passwort-Ändern Modal -->
+    <div id="modal-passwort" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:var(--card-bg); padding:30px; border-radius:var(--radius); width:100%; max-width:360px; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+            <h2 style="margin-bottom:20px;"><i data-lucide="lock" class="lucide-icon"></i> Passwort ändern</h2>
+            <div id="modal-error" style="display:none; background:#fff5f5; color:#c53030; border:1px solid #fed7d7; border-radius:var(--radius); padding:10px 14px; font-size:0.88rem; margin-bottom:16px;"></div>
+            <form id="form-passwort">
+                <div class="form-group">
+                    <label for="pw-aktuell">Aktuelles Passwort:</label>
+                    <input type="password" id="pw-aktuell" required>
+                </div>
+                <div class="form-group">
+                    <label for="pw-neu">Neues Passwort:</label>
+                    <input type="password" id="pw-neu" required placeholder="Mindestens 8 Zeichen">
+                </div>
+                <div class="form-group">
+                    <label for="pw-neu2">Neues Passwort wiederholen:</label>
+                    <input type="password" id="pw-neu2" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" id="modal-abbrechen">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
         const btnDark = document.getElementById('btn-darkmode');
         if (localStorage.getItem('darkmode') === '1') {
             document.body.classList.add('dark-mode');
-            btnDark.textContent = '☀️';
+            btnDark.innerHTML = '<i data-lucide="sun" class="lucide-icon"></i>'; refreshIcons();
         }
         btnDark.addEventListener('click', () => {
             const isDark = document.body.classList.toggle('dark-mode');
-            btnDark.textContent = isDark ? '☀️' : '🌙';
+            btnDark.innerHTML = isDark ? '<i data-lucide="sun" class="lucide-icon"></i>' : '<i data-lucide="moon" class="lucide-icon"></i>'; refreshIcons();
             localStorage.setItem('darkmode', isDark ? '1' : '0');
         });
     </script>
 
     <script>
+    // ── CSRF-Token Helper ──
+    let _csrfToken = '';
+    async function getCsrfToken() {
+        if (_csrfToken) return _csrfToken;
+        const res = await fetch('api_auth.php?action=csrf');
+        const data = await res.json();
+        _csrfToken = data.csrf_token || '';
+        return _csrfToken;
+    }
+    async function apiFetch(url, options = {}) {
+        const token = await getCsrfToken();
+        options.headers = options.headers || {};
+        options.headers['X-CSRF-Token'] = token;
+        const res = await fetch(url, options);
+        if (res.status === 401) { window.location.href = 'login.html'; return null; }
+        return res.json();
+    }
+
     // ── Session-Schutz ──
     fetch('api_auth.php?action=check')
         .then(res => res.json())
@@ -174,6 +220,61 @@
                 document.getElementById('nav-users').style.display = 'inline-block';
             }
         });
+
+    // ── Passwort-Modal ──
+    const modal = document.getElementById('modal-passwort');
+
+    document.getElementById('nav-user').addEventListener('click', () => {
+        document.getElementById('form-passwort').reset();
+        document.getElementById('modal-error').style.display = 'none';
+        modal.style.display = 'flex';
+    });
+
+    document.getElementById('modal-abbrechen').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+    });
+
+    document.getElementById('form-passwort').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const errorDiv = document.getElementById('modal-error');
+        errorDiv.style.display = 'none';
+
+        const pwNeu  = document.getElementById('pw-neu').value;
+        const pwNeu2 = document.getElementById('pw-neu2').value;
+
+        if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{12,}$/.test(pwNeu)) {
+            errorDiv.textContent = 'Passwort muss mindestens 12 Zeichen lang sein und Groß-/Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (pwNeu !== pwNeu2) {
+            errorDiv.textContent = 'Die neuen Passwörter stimmen nicht überein.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        apiFetch('api_auth.php?action=change_password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                passwort_aktuell: document.getElementById('pw-aktuell').value,
+                passwort_neu:     pwNeu
+            })
+        })
+        .then(result => {
+            if (!result) return;
+            if (result.status === 'success') {
+                modal.style.display = 'none';
+            } else {
+                errorDiv.textContent = result.message;
+                errorDiv.style.display = 'block';
+            }
+        });
+    });
 
     document.getElementById('btn-logout').addEventListener('click', () => {
         fetch('api_auth.php?action=logout', { method: 'POST' })

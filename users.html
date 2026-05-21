@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Userverwaltung</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" onload="lucide.createIcons()"></script>
+    <script src="icons.js"></script>
 </head>
 <body>
 
     <div class="nav-bar">
-        <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
-        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <a href="index.html" class="nav-link"><i data-lucide="arrow-right" class="lucide-icon"></i> Zur Zeiterfassung</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#ffffff; font-weight:600;"></span>
         <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
-        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode">🌙</button>
+        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode"><i data-lucide="moon" class="lucide-icon"></i></button>
     </div>
 
     <div class="main-layout">
 
         <!-- Linke Spalte: Formular -->
         <div class="form-panel">
-            <h2>👤 User anlegen</h2>
+            <h2><i data-lucide="user" class="lucide-icon"></i> User anlegen</h2>
             <form id="user-form">
 
                 <div class="form-group">
@@ -38,7 +40,7 @@
                     <label for="passwort">Passwort:</label>
                     <div style="display:flex; gap:8px;">
                         <input type="text" id="passwort" name="passwort" placeholder="Leer lassen = nicht ändern" style="flex:1;">
-                        <button type="button" class="btn btn-small" id="btn-gen-passwort" title="Passwort generieren">🔑 Generieren</button>
+                        <button type="button" class="btn btn-small" id="btn-gen-passwort" title="Passwort generieren"><i data-lucide="key-round" class="lucide-icon"></i> Generieren</button>
                     </div>
                 </div>
 
@@ -61,7 +63,7 @@
         <!-- Rechte Spalte: Tabelle -->
         <div class="list-panel">
             <div class="list-container">
-                <h2>👥 Vorhandene User</h2>
+                <h2><i data-lucide="users" class="lucide-icon"></i> Vorhandene User</h2>
                 <div class="table-responsive">
                     <table class="zeiterfassung-table">
                         <colgroup>
@@ -92,6 +94,26 @@
 
     </div>
 
+
+    <script>
+    // ── CSRF-Token Helper ──
+    let _csrfToken = '';
+    async function getCsrfToken() {
+        if (_csrfToken) return _csrfToken;
+        const res = await fetch('api_auth.php?action=csrf');
+        const data = await res.json();
+        _csrfToken = data.csrf_token || '';
+        return _csrfToken;
+    }
+    async function apiFetch(url, options = {}) {
+        const token = await getCsrfToken();
+        options.headers = options.headers || {};
+        options.headers['X-CSRF-Token'] = token;
+        const res = await fetch(url, options);
+        if (res.status === 401) { window.location.href = 'login.html'; return null; }
+        return res.json();
+    }
+    </script>
     <script>
     document.addEventListener('DOMContentLoaded', () => {
 
@@ -99,11 +121,11 @@
         const btnDark = document.getElementById('btn-darkmode');
         if (localStorage.getItem('darkmode') === '1') {
             document.body.classList.add('dark-mode');
-            btnDark.textContent = '☀️';
+            btnDark.innerHTML = '<i data-lucide="sun" class="lucide-icon"></i>'; refreshIcons();
         }
         btnDark.addEventListener('click', () => {
             const isDark = document.body.classList.toggle('dark-mode');
-            btnDark.textContent = isDark ? '☀️' : '🌙';
+            btnDark.innerHTML = isDark ? '<i data-lucide="sun" class="lucide-icon"></i>' : '<i data-lucide="moon" class="lucide-icon"></i>'; refreshIcons();
             localStorage.setItem('darkmode', isDark ? '1' : '0');
         });
 
@@ -144,20 +166,21 @@
                                 <td><strong>${u.anzeigename}</strong></td>
                                 <td>${u.benutzername}</td>
                                 <td>${u.email || '-'}</td>
-                                <td>${u.ist_admin ? '✅' : '-'}</td>
-                                <td>${u.aktiv ? '✅' : '❌'}</td>
+                                <td>${u.ist_admin ? '<i data-lucide="shield-check" class="lucide-icon" style="color:#007E36"></i>' : '-'}</td>
+                                <td>${u.aktiv ? '<i data-lucide="check-circle" class="lucide-icon" style="color:#007E36"></i>' : '<i data-lucide="x-circle" class="lucide-icon" style="color:#e53e3e"></i>'}</td>
                                 <td><small>${erstellt}</small></td>
                                 <td>
-                                    <button class="action-btn" title="Bearbeiten" onclick='bearbeiten(${JSON.stringify(u)})'>✏️</button>
+                                    <button class="action-btn" title="Bearbeiten" onclick='bearbeiten(${JSON.stringify(u)})'><i data-lucide="pencil" class="lucide-icon"></i></button>
                                     ${u.aktiv
-                                        ? `<button class="action-btn" title="Deaktivieren" onclick="deaktivieren(${u.id})">🚫</button>`
-                                        : `<button class="action-btn" title="Aktivieren" onclick="aktivieren(${u.id})">✔️</button>`
+                                        ? `<button class="action-btn" title="Deaktivieren" onclick="deaktivieren(${u.id})"><i data-lucide="ban" class="lucide-icon"></i></button>`
+                                        : `<button class="action-btn" title="Aktivieren" onclick="aktivieren(${u.id})"><i data-lucide="check" class="lucide-icon"></i></button>`
                                     }
-                                    <button class="action-btn" title="Löschen" onclick="loeschen(${u.id})">❌</button>
+                                    <button class="action-btn" title="Löschen" onclick="loeschen(${u.id})"><i data-lucide="x" class="lucide-icon"></i></button>
                                 </td>
                             </tr>
                         `);
                     });
+                    refreshIcons();
                 });
         }
 
@@ -189,7 +212,7 @@
                 if (result.status === 'success') {
                     // E-Mail automatisch senden wenn E-Mail und Passwort vorhanden
                     if (data.email && data.passwort) {
-                        fetch('api_mail.php', {
+                        apiFetch('api_mail.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -224,12 +247,23 @@
 
         // ── Passwort generieren ──
         function generierePasswort() {
-            const zeichen = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%';
-            let pw = '';
-            for (let i = 0; i < 12; i++) {
-                pw += zeichen[Math.floor(Math.random() * zeichen.length)];
+            const klein    = 'abcdefghijkmnpqrstuvwxyz';
+            const gross    = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+            const zahlen   = '23456789';
+            const sonder   = '!@#$%&*';
+            const alle     = klein + gross + zahlen + sonder;
+            // Mindestens je 1 aus jeder Gruppe
+            let pw = [
+                klein[Math.floor(Math.random() * klein.length)],
+                gross[Math.floor(Math.random() * gross.length)],
+                zahlen[Math.floor(Math.random() * zahlen.length)],
+                sonder[Math.floor(Math.random() * sonder.length)]
+            ];
+            for (let i = 4; i < 14; i++) {
+                pw.push(alle[Math.floor(Math.random() * alle.length)]);
             }
-            return pw;
+            // Mischen
+            return pw.sort(() => Math.random() - 0.5).join('');
         }
 
         document.getElementById('btn-gen-passwort').addEventListener('click', () => {
@@ -254,20 +288,18 @@
         // Deaktivieren
         window.deaktivieren = function(id) {
             if (!confirm('User wirklich deaktivieren?')) return;
-            fetch(`api_users.php?id=${id}`, { method: 'DELETE' })
-                .then(res => res.json())
+            apiFetch(`api_users.php?id=${id}`, { method: 'DELETE' })
                 .then(result => { if (result.status !== 'success') alert('Fehler: ' + result.message); ladeUsers(); });
         };
 
         // Aktivieren (über PUT mit aktiv=1)
         window.aktivieren = function(id) {
-            fetch(`api_users.php?id=${id}`, {
+            apiFetch(`api_users.php?id=${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ aktiv: true })
             })
-            .then(res => res.json())
-            .then(result => { if (result.status !== 'success') alert('Fehler: ' + result.message); ladeUsers(); });
+            .then(result => { if (result && result.status !== 'success') alert('Fehler: ' + result.message); ladeUsers(); });
         };
 
         // Löschen

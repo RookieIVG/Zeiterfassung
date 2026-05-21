@@ -49,8 +49,8 @@ if ($method === 'POST') {
         exit;
     }
 
-    if (strlen($data['passwort']) < 8) {
-        echo json_encode(["status" => "error", "message" => "Passwort muss mindestens 8 Zeichen lang sein."]);
+    if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{12,}$/', $data['passwort'])) {
+        echo json_encode(["status" => "error", "message" => "Passwort muss mindestens 12 Zeichen lang sein und Groß-/Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten."]);
         exit;
     }
 
@@ -61,7 +61,7 @@ if ($method === 'POST') {
             ':b'     => htmlspecialchars(trim($data['benutzername'])),
             ':h'     => $hash,
             ':a'     => htmlspecialchars(trim($data['anzeigename'])),
-            ':email' => !empty($data['email']) ? htmlspecialchars(trim($data['email'])) : null,
+            ':email' => !empty($data['email']) ? (filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL) ? htmlspecialchars(trim($data['email'])) : null) : null,
             ':admin' => !empty($data['ist_admin']) ? 1 : 0
         ]);
         echo json_encode(["status" => "success", "message" => "User erfolgreich angelegt."]);
@@ -94,8 +94,8 @@ if ($method === 'PUT') {
 
     try {
         if (!empty($data['passwort'])) {
-            if (strlen($data['passwort']) < 8) {
-                echo json_encode(["status" => "error", "message" => "Passwort muss mindestens 8 Zeichen lang sein."]);
+            if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{12,}$/', $data['passwort'])) {
+                echo json_encode(["status" => "error", "message" => "Passwort muss mindestens 12 Zeichen lang sein und Groß-/Kleinbuchstaben, eine Zahl und ein Sonderzeichen enthalten."]);
                 exit;
             }
             $hash = password_hash($data['passwort'], PASSWORD_BCRYPT);
@@ -103,7 +103,7 @@ if ($method === 'PUT') {
             $stmt->execute([
                 ':b'     => htmlspecialchars(trim($data['benutzername'])),
                 ':a'     => htmlspecialchars(trim($data['anzeigename'])),
-                ':email' => !empty($data['email']) ? htmlspecialchars(trim($data['email'])) : null,
+                ':email' => !empty($data['email']) ? (filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL) ? htmlspecialchars(trim($data['email'])) : null) : null,
                 ':admin' => !empty($data['ist_admin']) ? 1 : 0,
                 ':aktiv' => !empty($data['aktiv']) ? 1 : 0,
                 ':h'     => $hash,
@@ -114,7 +114,7 @@ if ($method === 'PUT') {
             $stmt->execute([
                 ':b'     => htmlspecialchars(trim($data['benutzername'] ?? '')),
                 ':a'     => htmlspecialchars(trim($data['anzeigename'] ?? '')),
-                ':email' => !empty($data['email']) ? htmlspecialchars(trim($data['email'])) : null,
+                ':email' => !empty($data['email']) ? (filter_var(trim($data['email']), FILTER_VALIDATE_EMAIL) ? htmlspecialchars(trim($data['email'])) : null) : null,
                 ':admin' => !empty($data['ist_admin']) ? 1 : 0,
                 ':aktiv' => !empty($data['aktiv']) ? 1 : 0,
                 ':id'    => $id
