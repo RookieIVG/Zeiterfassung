@@ -3,93 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zeiterfassung - Neue Buchung</title>
+    <title>Zeiterfassung</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            display: block;
-            padding: 0;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-        }
-
-        .nav-bar {
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            background-color: var(--bg-color);
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border-color);
-            text-align: right;
-        }
-
-        .nav-link {
-            display: inline-block;
-            padding: 8px 14px;
-            background: #edf2f7;
-            color: #2b6cb0;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .nav-link:hover { background: #cbd5e0; }
-
-        .sticky-form-wrapper {
-            position: sticky;
-            top: 45px;
-            z-index: 100;
-            background-color: var(--bg-color);
-            padding: 16px 0 0 0;
-            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.08);
-        }
-
-        .sticky-form-wrapper .form-container,
-        .scroll-area .list-container {
-            max-width: 90%;
-            margin: 0 auto;
-        }
-
-        .scroll-area {
-            padding: 20px 0;
-        }
-
-        /* 4-spaltig für Zeile 1 und Zeile 2 */
-        .form-grid.quad {
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-        }
-
-        @media (max-width: 800px) {
-            .form-grid.quad {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
 
     <div class="nav-bar">
+        <a href="users.html" class="nav-link" id="nav-users" style="display:none;">👥 Userverwaltung</a>
         <a href="auftraege.html" class="nav-link">📂 Aufträge verwalten</a>
+        <a href="auswertung.html" class="nav-link">📊 Auswertung durchführen</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
         <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten">🌙</button>
     </div>
 
-    <div class="sticky-form-wrapper">
-        <div class="form-container">
+    <div class="main-layout">
+
+        <!-- Linke Spalte: Formular -->
+        <div class="form-panel">
             <h2>⏱️ Neue Zeit erfassen</h2>
             <form id="zeiterfassung-form">
 
-                <!-- Zeile 1: Datum, Von, Bis, Buchungsart -->
-                <div class="form-grid quad">
+                <div class="form-grid double">
                     <div class="form-group">
                         <label for="datum_ze">Datum:</label>
                         <input type="date" id="datum_ze" name="datum_ze" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="zeit_von">Von:</label>
-                        <input type="time" id="zeit_von" name="zeit_von" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="zeit_bis">Bis:</label>
-                        <input type="time" id="zeit_bis" name="zeit_bis" title="Doppelklick, um aktuelle Uhrzeit einzufügen" required>
                     </div>
                     <div class="form-group">
                         <label for="buchungsart">Buchungsart:</label>
@@ -101,14 +39,27 @@
                     </div>
                 </div>
 
-                <!-- Zeile 2: Auftrag, Tätigkeit, Meldungsnummer, Weiterleitung an -->
-                <div class="form-grid quad">
+                <div class="form-grid double">
                     <div class="form-group">
-                        <label for="auftrag_id">Auftrag (Code):</label>
-                        <select id="auftrag_id" name="auftrag_id" required>
-                            <option value="">-- Bitte wählen --</option>
-                        </select>
+                        <label for="zeit_von">Von:</label>
+                        <input type="time" id="zeit_von" name="zeit_von" title="Doppelklick für aktuelle Uhrzeit" required>
                     </div>
+                    <div class="form-group">
+                        <label for="zeit_bis">Bis:</label>
+                        <input type="time" id="zeit_bis" name="zeit_bis" title="Doppelklick für aktuelle Uhrzeit" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="auftrag_id">Auftrag (Code):</label>
+                    <div class="combobox-wrapper">
+                        <input type="text" id="auftrag_search" placeholder="Code oder Bezeichnung suchen..." autocomplete="off">
+                        <input type="hidden" id="auftrag_id" name="auftrag_id">
+                        <div class="combobox-dropdown" id="auftrag_dropdown"></div>
+                    </div>
+                </div>
+
+                <div class="form-grid double">
                     <div class="form-group">
                         <label for="taetigkeit">Tätigkeit:</label>
                         <input type="text" id="taetigkeit" name="taetigkeit" placeholder="Kurzbeschreibung">
@@ -117,16 +68,16 @@
                         <label for="meldungsnummer">Meldungsnummer:</label>
                         <input type="text" id="meldungsnummer" name="meldungsnummer" placeholder="z.B. Ticket-ID">
                     </div>
-                    <div class="form-group">
-                        <label for="weiterleitung_an">Weiterleitung an:</label>
-                        <input type="text" id="weiterleitung_an" name="weiterleitung_an">
-                    </div>
                 </div>
 
-                <!-- Zeile 3: Anmerkungen -->
+                <div class="form-group">
+                    <label for="weiterleitung_an">Weiterleitung an:</label>
+                    <input type="text" id="weiterleitung_an" name="weiterleitung_an">
+                </div>
+
                 <div class="form-group">
                     <label for="anmerkungen">Anmerkungen:</label>
-                    <textarea id="anmerkungen" name="anmerkungen" rows="3" placeholder="Detaillierte Infos zur Buchung..."></textarea>
+                    <textarea id="anmerkungen" name="anmerkungen" rows="3" placeholder="Detaillierte Infos..."></textarea>
                 </div>
 
                 <div class="button-group">
@@ -136,56 +87,66 @@
 
             </form>
         </div>
-    </div>
 
-    <div class="scroll-area">
-        <div class="list-container">
-            <div class="list-header">
-                <h2>📊 Gebuchte Zeiten</h2>
-                <div class="filter-bar">
-                    <button id="btn-prev-week" class="btn btn-small">◀ Letzte Woche</button>
-                    <span id="current-period-display" class="period-badge">KW 21 (Aktuelle Woche)</span>
-                    <button id="btn-next-week" class="btn btn-small">Nächste Woche ▶</button>
+        <!-- Rechte Spalte: Tabelle -->
+        <div class="list-panel">
+            <div class="list-container">
+                <div class="list-header">
+                    <h2>📊 Gebuchte Zeiten</h2>
+                    <div class="filter-bar">
+                        <select id="filter-buchungsart">
+                            <option value="alle">Alle Buchungsarten</option>
+                            <option value="Arbeitszeit">Arbeitszeit</option>
+                            <option value="Pause">Pause</option>
+                            <option value="Dienstreise">Dienstreise</option>
+                        </select>
+                        <button id="btn-prev-week" class="btn btn-small">◀</button>
+                        <span id="current-period-display" class="period-badge">–</span>
+                        <button id="btn-next-week" class="btn btn-small">▶</button>
+                    </div>
+                </div>
 
-                    <select id="filter-buchungsart">
-                        <option value="alle">Alle Buchungsarten</option>
-                        <option value="Arbeitszeit">Arbeitszeit</option>
-                        <option value="Pause">Pause</option>
-                        <option value="Dienstreise">Dienstreise</option>
-                    </select>
+                <div class="table-responsive">
+                    <table class="zeiterfassung-table">
+                        <colgroup>
+                            <col class="col-datum">
+                            <col class="col-buchungsart">
+                            <col class="col-zeit">
+                            <col class="col-dauer">
+                            <col class="col-auftrag">
+                            <col class="col-meldung">
+                            <col class="col-taetigkeit">
+                            <col class="col-aktionen">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Buchungsart</th>
+                                <th>Von – Bis</th>
+                                <th>Dauer</th>
+                                <th>Auftrag</th>
+                                <th>Meldungsnr.</th>
+                                <th>Tätigkeit / Anmerkung</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="zeit-eintraege-body"></tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
+                                <td id="total-hours">00:00 Std.</td>
+                                <td colspan="4"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
-
-            <div class="table-responsive">
-                <table class="zeiterfassung-table">
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>Buchungsart</th>
-                            <th>Von - Bis</th>
-                            <th>Dauer</th>
-                            <th>Auftrag (Code)</th>
-                            <th>Tätigkeit / Anmerkung</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="zeit-eintraege-body">
-                    </tbody>
-                    <tfoot>
-                        <tr class="total-row">
-                            <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
-                            <td id="total-hours">00:00 Std.</td>
-                            <td colspan="3"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
         </div>
+
     </div>
 
     <script src="script.js"></script>
     <script>
-        // Dark Mode: Zustand aus localStorage laden
         const btnDark = document.getElementById('btn-darkmode');
         if (localStorage.getItem('darkmode') === '1') {
             document.body.classList.add('dark-mode');
@@ -196,6 +157,28 @@
             btnDark.textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('darkmode', isDark ? '1' : '0');
         });
+    </script>
+
+    <script>
+    // ── Session-Schutz ──
+    fetch('api_auth.php?action=check')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'logged_in') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('nav-user').textContent = data.anzeigename;
+            document.getElementById('btn-logout').style.display = 'inline-block';
+            if (data.ist_admin && document.getElementById('nav-users')) {
+                document.getElementById('nav-users').style.display = 'inline-block';
+            }
+        });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        fetch('api_auth.php?action=logout', { method: 'POST' })
+            .then(() => window.location.href = 'login.html');
+    });
     </script>
 </body>
 </html>

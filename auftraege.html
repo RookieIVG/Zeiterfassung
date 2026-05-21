@@ -3,154 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auftragsverwaltung (Codes)</title>
+    <title>Auftragsverwaltung</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Seitenlayout: fixierter Header + scrollbarer Inhalt */
-        body {
-            display: block;
-            padding: 0;
-            min-height: 100vh;
-            background-color: var(--bg-color);
-        }
-
-        /* Navigation */
-        .nav-bar {
-            position: sticky;
-            top: 0;
-            z-index: 200;
-            background-color: var(--bg-color);
-            padding: 12px 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .nav-link {
-            display: inline-block;
-            padding: 8px 14px;
-            background: #edf2f7;
-            color: #2b6cb0;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .nav-link:hover { background: #cbd5e0; }
-
-        /* Fixierter Formular-Bereich */
-        .sticky-form-wrapper {
-            position: sticky;
-            top: 45px; /* Höhe der nav-bar */
-            z-index: 100;
-            background-color: var(--bg-color);
-            padding: 16px 20px 0 20px;
-            box-shadow: 0 4px 8px -2px rgba(0,0,0,0.08);
-        }
-
-        .sticky-form-wrapper .form-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        /* Scrollbarer Listenbereich */
-        .scroll-area {
-            padding: 20px;
-        }
-
-        .scroll-area .list-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-    </style>
 </head>
 <body>
 
-    <!-- Navigation -->
     <div class="nav-bar">
         <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
         <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten">🌙</button>
     </div>
 
-    <!-- Fixierter Formular-Bereich -->
-    <div class="sticky-form-wrapper">
-        <div class="form-container">
-            <h2>📂 Neuen Auftrag (Code) anlegen</h2>
+    <div class="main-layout">
+
+        <!-- Linke Spalte: Formular -->
+        <div class="form-panel">
+            <h2>📂 Neuen Auftrag anlegen</h2>
             <form id="auftrag-form">
-                <div class="form-grid double">
-                    <div class="form-group">
-                        <label for="code">Code:</label>
-                        <input type="text" id="code" name="code" required placeholder="z.B. A100">
-                    </div>
-                    <div class="form-group">
-                        <label for="auftrag_kuerzel">Auftrag Kürzel:</label>
-                        <input type="text" id="auftrag_kuerzel" name="auftrag_kuerzel" required placeholder="z.B. PROJ1">
-                    </div>
+
+                <div class="form-group">
+                    <label for="code">Code:</label>
+                    <input type="text" id="code" name="code" required placeholder="z.B. A100">
                 </div>
 
-                <div class="form-grid double">
-                    <div class="form-group">
-                        <label for="leistungsart_id">Leistungsart:</label>
-                        <select id="leistungsart_id" name="leistungsart_id" required>
-                            <option value="">-- Bitte wählen --</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="bezeichnung">Auftrag Bezeichnung:</label>
-                        <input type="text" id="bezeichnung" name="bezeichnung" placeholder="Beschreibung des Auftrags">
-                    </div>
+                <div class="form-group">
+                    <label for="auftrag_kuerzel">CATS-Code:</label>
+                    <input type="text" id="auftrag_kuerzel" name="auftrag_kuerzel" required placeholder="z.B. PROJ1">
+                </div>
+
+                <div class="form-group">
+                    <label for="leistungsart_id">Leistungsart:</label>
+                    <select id="leistungsart_id" name="leistungsart_id" required>
+                        <option value="">-- Bitte wählen --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bezeichnung">Bezeichnung:</label>
+                    <input type="text" id="bezeichnung" name="bezeichnung" placeholder="Beschreibung des Auftrags" required>
                 </div>
 
                 <div class="form-grid double">
                     <div class="form-group">
                         <label for="gueltig_von">Gültig von:</label>
-                        <input type="date" id="gueltig_von" name="gueltig_von">
+                        <input type="date" id="gueltig_von" name="gueltig_von" required>
                     </div>
                     <div class="form-group">
                         <label for="gueltig_bis">Gültig bis:</label>
-                        <input type="date" id="gueltig_bis" name="gueltig_bis">
+                        <input type="date" id="gueltig_bis" name="gueltig_bis" required>
                     </div>
                 </div>
 
-                <div class="form-group checkbox-group">
+                <div class="checkbox-group">
                     <input type="checkbox" id="export_taetigkeit" name="export_taetigkeit" checked>
                     <label for="export_taetigkeit">Export Tätigkeit</label>
                 </div>
 
                 <div class="button-group">
-                    <button type="submit" class="btn btn-primary">Auftrag speichern</button>
+                    <button type="button" class="btn btn-secondary" id="btn-abbrechen">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit">Auftrag speichern</button>
                 </div>
+
             </form>
         </div>
-    </div>
 
-    <!-- Scrollbarer Listenbereich -->
-    <div class="scroll-area">
-        <div class="list-container">
-            <h2>📋 Vorhandene Aufträge (Codes)</h2>
-            <div class="table-responsive">
-                <table class="zeiterfassung-table">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Auftrag Kürzel</th>
-                            <th>Leistungsart</th>
-                            <th>Bezeichnung</th>
-                            <th>Gültigkeit</th>
-                            <th>Export</th>
-                            <th>Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="auftraege-table-body">
-                    </tbody>
-                </table>
+        <!-- Rechte Spalte: Tabelle -->
+        <div class="list-panel">
+            <div class="list-container">
+                <div class="list-header">
+                    <h2>📋 Vorhandene Aufträge</h2>
+                    <label class="filter-toggle">
+                        <input type="checkbox" id="filter-gueltig" checked>
+                        Nur gültige Einträge anzeigen
+                    </label>
+                </div>
+                <div class="table-responsive">
+                    <table class="zeiterfassung-table" id="auftraege-table">
+                        <colgroup>
+                            <col class="col-a-code">
+                            <col class="col-a-kuerzel">
+                            <col class="col-a-leistungsart">
+                            <col class="col-a-bezeichnung">
+                            <col class="col-a-gueltigkeit">
+                            <col class="col-a-export">
+                            <col class="col-a-aktion">
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>CATS-Code</th>
+                                <th>Leistungsart</th>
+                                <th>Bezeichnung</th>
+                                <th>Gültigkeit</th>
+                                <th>Export</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auftraege-table-body"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.getElementById('auftrag-form');
 
-            // 1. Leistungsarten für das Dropdown laden
-            fetch('api_auftraege.php?typ=leistungsarten')
+            fetch('api.php?typ=leistungsarten')
                 .then(res => res.json())
                 .then(leistungsarten => {
                     const select = document.getElementById('leistungsart_id');
@@ -162,74 +124,107 @@
                     });
                 });
 
-            // 2. Aufträge für die Tabelle laden
             function ladeAuftraege() {
-                fetch('api_auftraege.php')
+                fetch('api.php?typ=auftraege')
                     .then(res => res.json())
-                    .then(auftraege => {
+                    .then(alleAuftraege => {
+                        const nurGueltig = document.getElementById('filter-gueltig').checked;
+                        const heute = new Date();
+                        heute.setHours(0, 0, 0, 0);
+                        const auftraege = nurGueltig
+                            ? alleAuftraege.filter(a => !a.gueltig_bis || new Date(a.gueltig_bis) >= heute)
+                            : alleAuftraege;
                         const tbody = document.getElementById('auftraege-table-body');
                         tbody.innerHTML = '';
                         auftraege.forEach(a => {
                             const von = a.gueltig_von ? new Date(a.gueltig_von).toLocaleDateString('de-DE') : '-';
                             const bis = a.gueltig_bis ? new Date(a.gueltig_bis).toLocaleDateString('de-DE') : '-';
-                            const row = `
+                            tbody.insertAdjacentHTML('beforeend', `
                                 <tr>
                                     <td><strong>${a.code}</strong></td>
                                     <td>${a.auftrag_kuerzel}</td>
-                                    <td><span class="period-badge" style="font-size:0.8rem; padding:4px 8px;">${a.leistungsart_kuerzel || '-'}</span></td>
+                                    <td>${a.leistungsart_kuerzel || '-'}</td>
                                     <td>${a.bezeichnung || '-'}</td>
-                                    <td><small>${von} bis ${bis}</small></td>
+                                    <td>${von} – ${bis}</td>
                                     <td>${a.export_taetigkeit == 1 ? 'Ja' : 'Nein'}</td>
-                                    <td>
-                                        <button class="action-btn" title="Löschen" onclick="loeschen(${a.id})">❌</button>
-                                    </td>
+                                    <td><button class="action-btn" title="Bearbeiten" onclick='bearbeiten(${JSON.stringify(a)})'>✏️</button><button class="action-btn" title="Löschen" onclick="loeschen(${a.id})">❌</button></td>
                                 </tr>
-                            `;
-                            tbody.insertAdjacentHTML('beforeend', row);
+                            `);
                         });
                     });
             }
 
             ladeAuftraege();
+            document.getElementById('filter-gueltig').addEventListener('change', ladeAuftraege);
 
-            // 3. Auftrag speichern
+            // Standardwert für Gültig bis
+            document.getElementById('gueltig_bis').value = '9999-12-31';
+
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const formData = new FormData(form);
-                const data = Object.fromEntries(formData.entries());
+                const data = Object.fromEntries(new FormData(form).entries());
                 data.export_taetigkeit = document.getElementById('export_taetigkeit').checked;
 
-                fetch('api_auftraege.php', {
-                    method: 'POST',
+                const isEdit = bearbeitungId !== null;
+                const url    = isEdit ? `api.php?id=${bearbeitungId}&typ=auftraege` : 'api.php?typ=auftraege';
+                const method = isEdit ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 })
                 .then(res => res.json())
                 .then(result => {
-                    alert(result.message);
                     if (result.status === 'success') {
                         form.reset();
                         document.getElementById('export_taetigkeit').checked = true;
+                        document.getElementById('gueltig_bis').value = '9999-12-31';
+                        bearbeitungId = null;
+                        document.getElementById('btn-submit').textContent = 'Auftrag speichern';
                         ladeAuftraege();
+
+            // Standardwert für Gültig bis
+            document.getElementById('gueltig_bis').value = '9999-12-31';
                     }
                 });
             });
 
-            // Global machen, damit der Button im HTML es aufrufen kann
             window.loeschen = function(id) {
                 if (confirm('Möchtest du diesen Auftrag wirklich löschen?')) {
-                    fetch(`api_auftraege.php?id=${id}`, { method: 'DELETE' })
+                    fetch(`api.php?id=${id}&typ=auftraege`, { method: 'DELETE' })
                         .then(res => res.json())
-                        .then(result => {
-                            alert(result.message);
-                            ladeAuftraege();
-                        });
+                        .then(result => { if (result.status !== 'success') alert('Fehler: ' + result.message); ladeAuftraege(); });
                 }
             }
+
+            // Bearbeiten-Funktion
+            let bearbeitungId = null;
+            const submitBtn = document.getElementById('btn-submit');
+
+            window.bearbeiten = function(a) {
+                bearbeitungId = a.id;
+                document.getElementById('code').value           = a.code;
+                document.getElementById('auftrag_kuerzel').value = a.auftrag_kuerzel;
+                document.getElementById('bezeichnung').value    = a.bezeichnung || '';
+                document.getElementById('gueltig_von').value   = a.gueltig_von ? a.gueltig_von.substring(0,10) : '';
+                document.getElementById('gueltig_bis').value   = a.gueltig_bis ? a.gueltig_bis.substring(0,10) : '';
+                document.getElementById('export_taetigkeit').checked = a.export_taetigkeit == 1;
+                document.getElementById('leistungsart_id').value = a.leistungsart_id || '';
+                submitBtn.textContent = 'Änderung speichern';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            document.getElementById('btn-abbrechen').addEventListener('click', () => {
+                form.reset();
+                document.getElementById('export_taetigkeit').checked = true;
+                document.getElementById('gueltig_bis').value = '9999-12-31';
+                bearbeitungId = null;
+                submitBtn.textContent = 'Auftrag speichern';
+            });
         });
     </script>
     <script>
-        // Dark Mode: Zustand aus localStorage laden
         const btnDark = document.getElementById('btn-darkmode');
         if (localStorage.getItem('darkmode') === '1') {
             document.body.classList.add('dark-mode');
@@ -240,6 +235,28 @@
             btnDark.textContent = isDark ? '☀️' : '🌙';
             localStorage.setItem('darkmode', isDark ? '1' : '0');
         });
+    </script>
+
+    <script>
+    // ── Session-Schutz ──
+    fetch('api_auth.php?action=check')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'logged_in') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('nav-user').textContent = data.anzeigename;
+            document.getElementById('btn-logout').style.display = 'inline-block';
+            if (data.ist_admin && document.getElementById('nav-users')) {
+                document.getElementById('nav-users').style.display = 'inline-block';
+            }
+        });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        fetch('api_auth.php?action=logout', { method: 'POST' })
+            .then(() => window.location.href = 'login.html');
+    });
     </script>
 </body>
 </html>

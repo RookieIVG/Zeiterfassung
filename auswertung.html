@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auswertung</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="nav-bar">
+        <a href="index.html" class="nav-link">➔ Zur Zeiterfassung</a>
+        <span id="nav-user" style="font-size:0.85rem; color:#4a5568; font-weight:600;"></span>
+        <button class="btn btn-small" id="btn-logout" style="display:none;">Abmelden</button>
+        <button class="btn-darkmode" id="btn-darkmode" title="Dark/Light Mode umschalten">🌙</button>
+    </div>
+
+    <div class="main-layout">
+
+        <!-- Linke Spalte: Einstellungen -->
+        <div class="form-panel">
+            <h2>📊 Auswertung</h2>
+
+            <div class="form-grid double">
+                <div class="form-group">
+                    <label for="auswertung-monat">Monat:</label>
+                    <select id="auswertung-monat"></select>
+                </div>
+                <div class="form-group">
+                    <label for="auswertung-jahr">Jahr:</label>
+                    <select id="auswertung-jahr"></select>
+                </div>
+            </div>
+
+            <div class="checkbox-group" style="margin-bottom: 20px;">
+                <input type="checkbox" id="mit-taetigkeit">
+                <label for="mit-taetigkeit">Tätigkeit in Betreff aufnehmen</label>
+            </div>
+
+            <div class="button-group" style="border-top: none; padding-top: 0;">
+                <button class="btn btn-secondary" id="btn-download" disabled>⬇ ICS herunterladen</button>
+            </div>
+        </div>
+
+        <!-- Rechte Spalte: Vorschau -->
+        <div class="list-panel">
+            <div class="list-container">
+                <div class="list-header">
+                    <h2 id="vorschau-titel">📋 Vorschau</h2>
+                    <span id="vorschau-info" class="period-badge" style="display:none;"></span>
+                </div>
+                <div class="table-responsive">
+                    <table class="zeiterfassung-table">
+                        <colgroup>
+                            <col style="width: 105px;">
+                            <col style="width: 120px;">
+                            <col style="width: 110px;">
+                            <col style="width: 80px;">
+                            <col style="width: 190px;">
+                            <col style="width: 130px;">
+                            <col>
+                        </colgroup>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Buchungsart</th>
+                                <th>Von – Bis</th>
+                                <th>Dauer</th>
+                                <th>Auftrag</th>
+                                <th>Meldungsnr.</th>
+                                <th>Tätigkeit / Anmerkung</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vorschau-body">
+                            <tr>
+                                <td colspan="7" style="text-align:center; color:#a0aec0; padding: 30px;">
+                                    Monat und Jahr wählen, dann „Vorschau laden" klicken.
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="3">Gesamte Arbeitszeit (ohne Pausen):</td>
+                                <td id="vorschau-total">00:00</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // ── Monat/Jahr dynamisch befüllen ──
+        const monatNamen = ['','Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+        const heute = new Date();
+        let verfuegbareJahre = [];
+
+        fetch('api.php?typ=monate')
+            .then(res => {
+                if (res.status === 401) { window.location.href = 'login.html'; return null; }
+                return res.json();
+            })
+            .then(daten => {
+                if (!daten) return;
+                // Einzigartige Jahre sammeln
+                verfuegbareJahre = [...new Set(daten.map(d => d.jahr))];
+
+                // Jahre befüllen
+                const jahrSelect = document.getElementById('auswertung-jahr');
+                verfuegbareJahre.forEach(j => {
+                    const opt = document.createElement('option');
+                    opt.value = j;
+                    opt.textContent = j;
+                    if (j == heute.getFullYear()) opt.selected = true;
+                    jahrSelect.appendChild(opt);
+                });
+
+                // Monate für gewähltes Jahr befüllen
+                aktualisiereMonatDropdown(daten);
+
+                // Event-Listener
+                jahrSelect.addEventListener('change', () => aktualisiereMonatDropdown(daten));
+                document.getElementById('auswertung-monat').addEventListener('change', ladeVorschau);
+
+                ladeVorschau();
+            });
+
+        function aktualisiereMonatDropdown(daten) {
+            const jahr = parseInt(document.getElementById('auswertung-jahr').value);
+            const monatSelect = document.getElementById('auswertung-monat');
+            const alterWert = monatSelect.value;
+            monatSelect.innerHTML = '';
+
+            const monateImJahr = daten
+                .filter(d => d.jahr == jahr)
+                .map(d => d.monat);
+
+            monateImJahr.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = monatNamen[m];
+                if (m == (heute.getMonth() + 1) || m == alterWert) opt.selected = true;
+                monatSelect.appendChild(opt);
+            });
+
+            ladeVorschau();
+        }
+
+        // ── Dark Mode ──
+        const btnDark = document.getElementById('btn-darkmode');
+        if (localStorage.getItem('darkmode') === '1') {
+            document.body.classList.add('dark-mode');
+            btnDark.textContent = '☀️';
+        }
+        btnDark.addEventListener('click', () => {
+            const isDark = document.body.classList.toggle('dark-mode');
+            btnDark.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('darkmode', isDark ? '1' : '0');
+        });
+
+        // ── Hilfsfunktionen ──
+        function berechneDauer(von, bis) {
+            const [vH, vM] = von.substring(0,5).split(':').map(Number);
+            const [bH, bM] = bis.substring(0,5).split(':').map(Number);
+            let diff = (bH * 60 + bM) - (vH * 60 + vM);
+            if (diff < 0) diff += 24 * 60;
+            return {
+                string: `${String(Math.floor(diff/60)).padStart(2,'0')}:${String(diff%60).padStart(2,'0')}`,
+                minuten: diff,
+                dezimal: diff / 60
+            };
+        }
+
+        function pad(n) { return String(n).padStart(2, '0'); }
+
+        function formatDatumDE(dateStr) {
+            return new Date(dateStr).toLocaleDateString('de-DE');
+        }
+
+        // Gespeicherte Daten für ICS-Download
+        let aktuelleEintraege = [];
+
+        // ── Vorschau laden ──
+        function ladeVorschau() {
+            const monat = parseInt(document.getElementById('auswertung-monat').value);
+            const jahr  = parseInt(document.getElementById('auswertung-jahr').value);
+
+            fetch('api.php')
+                .then(res => {
+                    if (res.status === 401) { window.location.href = 'login.html'; return null; }
+                    return res.json();
+                })
+                .then(daten => {
+                    if (!daten || !Array.isArray(daten)) return;
+                    // Filtern: gewählter Monat + Jahr, keine Pausen
+                    aktuelleEintraege = daten.filter(e => {
+                        if (e.buchungsart === 'Pause') return false;
+                        const d = new Date(e.datum_ze);
+                        return d.getMonth() + 1 === monat && d.getFullYear() === jahr;
+                    });
+
+                    const tbody = document.getElementById('vorschau-body');
+                    tbody.innerHTML = '';
+
+                    const monatSelectLeer = document.getElementById('auswertung-monat');
+                    const monatNameLeer = monatSelectLeer.options[monatSelectLeer.selectedIndex].text;
+                    const aktJahrLeer = document.getElementById('auswertung-jahr').value;
+                    document.getElementById('vorschau-titel').textContent = `📋 Vorschau – ${monatNameLeer} ${aktJahrLeer}`;
+                    document.getElementById('vorschau-info').textContent  = '0 Einträge';
+                    document.getElementById('vorschau-info').style.display = 'inline-block';
+
+                    if (aktuelleEintraege.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#a0aec0; padding:30px;">Keine Einträge für diesen Zeitraum.</td></tr>';
+                        document.getElementById('vorschau-total').textContent = '00:00';
+                        document.getElementById('btn-download').disabled = true;
+                        return;
+                    }
+
+                    let gesamtMinuten = 0;
+                    aktuelleEintraege.forEach(e => {
+                        const dauer = berechneDauer(e.zeit_von, e.zeit_bis);
+                        gesamtMinuten += dauer.minuten;
+                        const auftragText = e.auftrag_code
+                            ? `${e.auftrag_code} | ${e.auftrag_kuerzel || ''}`
+                            : '-';
+
+                        tbody.insertAdjacentHTML('beforeend', `
+                            <tr>
+                                <td>${formatDatumDE(e.datum_ze)}</td>
+                                <td><strong>${e.buchungsart}</strong></td>
+                                <td>${e.zeit_von.substring(0,5)} – ${e.zeit_bis.substring(0,5)}</td>
+                                <td>${dauer.string}</td>
+                                <td>${auftragText}</td>
+                                <td>${e.meldungsnummer || '-'}</td>
+                                <td>
+                                    <strong>${e.taetigkeit || '-'}</strong>
+                                    ${e.anmerkungen ? `<br><small style="color:#718096">${e.anmerkungen}</small>` : ''}
+                                </td>
+                            </tr>
+                        `);
+                    });
+
+                    const std = Math.floor(gesamtMinuten / 60);
+                    const min = gesamtMinuten % 60;
+                    document.getElementById('vorschau-total').textContent = `${pad(std)}:${pad(min)}`;
+
+                    const monatSelect = document.getElementById('auswertung-monat');
+                    const monatName = monatSelect.options[monatSelect.selectedIndex].text;
+                    const aktJahr = document.getElementById('auswertung-jahr').value;
+                    document.getElementById('vorschau-titel').textContent = `📋 Vorschau – ${monatName} ${aktJahr}`;
+                    document.getElementById('vorschau-info').textContent  = `${aktuelleEintraege.length} Einträge`;
+                    document.getElementById('vorschau-info').style.display = 'inline-block';
+                    document.getElementById('btn-download').disabled = false;
+                });
+        }
+
+
+
+        // ── ICS generieren & herunterladen ──
+        document.getElementById('btn-download').addEventListener('click', () => {
+            const monat     = parseInt(document.getElementById('auswertung-monat').value);
+            const jahr      = parseInt(document.getElementById('auswertung-jahr').value);
+            const mitTaet   = document.getElementById('mit-taetigkeit').checked;
+            const monatSelect = document.getElementById('auswertung-monat');
+            const monatName = monatSelect.options[monatSelect.selectedIndex].text;
+
+            let ics = [
+                'BEGIN:VCALENDAR',
+                'PRODID:-//Microsoft Corporation//Outlook 14.0 MIMEDIR//EN',
+                'VERSION:2.0',
+                'METHOD:Publish',
+                'BEGIN:VTIMEZONE',
+                'TZID:W. Europe Standard Time',
+                'BEGIN:STANDARD',
+                'DTSTART:16011028T030000',
+                'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10',
+                'TZOFFSETFROM:+0200',
+                'TZOFFSETTO:+0100',
+                'END:STANDARD',
+                'BEGIN:DAYLIGHT',
+                'DTSTART:16010325T020000',
+                'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3',
+                'TZOFFSETFROM:+0100',
+                'TZOFFSETTO:+0200',
+                'END:DAYLIGHT',
+                'END:VTIMEZONE',
+                ' '
+            ];
+
+            aktuelleEintraege.forEach(e => {
+                const dauer   = berechneDauer(e.zeit_von, e.zeit_bis);
+                const datumStr = e.datum_ze.substring(0,10).replace(/-/g, '');
+
+                // DTEND: 08:00 + Dauer
+                const endMinutenGesamt = 8 * 60 + dauer.minuten;
+                const endH = Math.floor(endMinutenGesamt / 60);
+                const endM = endMinutenGesamt % 60;
+                const dtEnd = `${datumStr}T${pad(endH)}${pad(endM)}00`;
+
+                // SUMMARY aufbauen
+                const kuerzel      = e.auftrag_kuerzel || '';
+                const leistungsart = e.leistungsart_kuerzel || '';
+                const taetigkeit   = e.taetigkeit || '';
+                const summary      = mitTaet
+                    ? `${kuerzel}:${leistungsart}:${taetigkeit}`
+                    : `${kuerzel}:${leistungsart}:`;
+
+                ics.push('BEGIN:VEVENT');
+                ics.push('CLASS:PUBLIC');
+                ics.push(`DTEND;TZID="W. Europe Standard Time":${dtEnd}`);
+                ics.push(`DTSTART;TZID="W. Europe Standard Time":${datumStr}T080000`);
+                ics.push('SEQUENCE:0');
+                ics.push(`SUMMARY;LANGUAGE=de-at:${summary}`);
+                ics.push('TRANSP:OPAQUE');
+                ics.push('UID:040000008200E00074C5B7101A82E008000000009028832' + datumStr + 'T080000Z');
+                ics.push('END:VEVENT');
+                ics.push(' ');
+            });
+
+            ics.push('END:VCALENDAR');
+
+            const blob = new Blob([ics.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `Zeiterfassung_${monatName}_${jahr}.ics`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+    });
+    </script>
+
+    <script>
+    // ── Session-Schutz ──
+    fetch('api_auth.php?action=check')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'logged_in') {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('nav-user').textContent = data.anzeigename;
+            document.getElementById('btn-logout').style.display = 'inline-block';
+            if (data.ist_admin && document.getElementById('nav-users')) {
+                document.getElementById('nav-users').style.display = 'inline-block';
+            }
+        });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+        fetch('api_auth.php?action=logout', { method: 'POST' })
+            .then(() => window.location.href = 'login.html');
+    });
+    </script>
+</body>
+</html>

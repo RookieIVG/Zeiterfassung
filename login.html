@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeiterfassung – Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+        }
+
+        .login-error {
+            background: #fff5f5;
+            color: #c53030;
+            border: 1px solid #fed7d7;
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        body.dark-mode .login-error {
+            background: #2d1515;
+            color: #fc8181;
+            border-color: #742a2a;
+        }
+
+        .btn-primary { width: 100%; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2>⏱️ Zeiterfassung</h2>
+
+        <div class="login-error" id="login-error"></div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="benutzername">Benutzername:</label>
+                <input type="text" id="benutzername" name="benutzername" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="passwort">Passwort:</label>
+                <input type="password" id="passwort" name="passwort" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn btn-primary">Anmelden</button>
+        </form>
+    </div>
+
+    <script>
+        // Dark Mode
+        if (localStorage.getItem('darkmode') === '1') {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Bereits eingeloggt?
+        fetch('api_auth.php?action=check')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'logged_in') window.location.href = 'index.html';
+            });
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.style.display = 'none';
+
+            const data = {
+                benutzername: document.getElementById('benutzername').value,
+                passwort:     document.getElementById('passwort').value
+            };
+
+            fetch('api_auth.php?action=login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    window.location.href = 'index.html';
+                } else {
+                    errorDiv.textContent = result.message;
+                    errorDiv.style.display = 'block';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
